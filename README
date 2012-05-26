@@ -1,0 +1,50 @@
+ffms – Python 3 bindings for FFmpegSource
+
+
+# Import the package:
+>>> import ffms
+
+# If you don’t need to keep the index, create a video source right away:
+>>> source_file = "test/xvid.mkv"
+>>> vsource = ffms.VideoSource(source_file)
+
+# Or you can create an indexer:
+>>> indexer = ffms.Indexer(source_file)
+>>> indexer.format_name
+'matroska'
+>>> indexer.track_info_list
+[TrackInfo(type=0, codec_name='mpeg4')]
+
+# Then create the index for the video source:
+>>> index = indexer.do_indexing(-1)
+>>> track_n = index.get_first_indexed_track_of_type(ffms.FFMS_TYPE_VIDEO)
+>>> vsource = ffms.VideoSource(source_file, track_n, index)
+
+# Extract information from the video source:
+>>> vsource.properties.NumFrames
+8
+>>> vsource.track.keyframes
+[0, 1, 2, 3, 4, 5, 6, 7]
+>>> vsource.track.timecodes
+[0.0, 1000.0, 2000.0, 3000.0, 4000.0, 5000.0, 6000.0, 7000.0]
+
+# Retrieve a video frame:
+>>> frame = vsource.get_frame(0)
+>>> frame.EncodedWidth, frame.EncodedHeight
+(128, 96)
+
+# Picture planes from the last retrieved frame:
+>>> vsource.planes[0]
+array([16, 16, 16, ..., 16, 16, 16], dtype=uint8)
+
+
+ffmsinfo.py is demo script showing how this package can be used.
+
+
+Requirements:
+– Python 3.2 <http://www.python.org/>
+– numpy <http://www.numpy.org/>
+– FFmpegSource <http://code.google.com/p/ffmpegsource/>
+
+Additional requirements under Windows:
+– pywin32 <http://sourceforge.net/projects/pywin32/>
