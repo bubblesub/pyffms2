@@ -38,7 +38,7 @@ ffms – Python 3 bindings for FFmpegSource
 array([16, 16, 16, ..., 16, 16, 16], dtype=uint8)
 
 
-ffmsinfo.py is demo script showing how this package can be used.
+ffmsinfo.py is a demo script showing how this package can be used.
 
 The API was designed to be an object-oriented and Pythonic version
 of the original FFmpegSource API. For more information, you can have a look
