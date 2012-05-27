@@ -31,7 +31,7 @@ ffms – Python 3 bindings for FFmpegSource
 # Retrieve a video frame:
 >>> frame = vsource.get_frame(0)
 >>> frame.EncodedWidth, frame.EncodedHeight
-(128, 96)
+(128, 72)
 
 # Picture planes from the last retrieved frame:
 >>> vsource.planes[0]
