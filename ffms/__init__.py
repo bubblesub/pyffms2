@@ -319,7 +319,7 @@ class Index:
                     "must provide either index file or source file")
             index_file = source_file + FFINDEX_EXT
         # FFMS_ReadIndex() under Windows will hang if index file doesn’t exist.
-        # Tested with FFMS v2.17
+        # Tested with FFMS 2.17
         if not os.path.isfile(index_file):
             raise Error("no index file {!r}".format(index_file),
                         FFMS_ERROR_PARSER, FFMS_ERROR_FILE_READ)
@@ -740,6 +740,8 @@ class Track:
 
 
 class VideoTrack(Track, VideoType):
+    """FFMS_Track of type FFMS_TYPE_VIDEO
+    """
     @property
     def keyframes(self):
         """List of keyframe positions
@@ -767,7 +769,8 @@ class VideoTrack(Track, VideoType):
 
 
 class AudioTrack(Track, AudioType):
-    pass
+    """FFMS_Track of type FFMS_TYPE_AUDIO
+    """
 
 
 def list_to_mask(l):
