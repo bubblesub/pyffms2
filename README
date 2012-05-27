@@ -5,7 +5,7 @@ ffms – Python 3 bindings for FFmpegSource
 >>> import ffms
 
 # If you don’t need to keep the index, create a video source right away:
->>> source_file = "test/xvid.mkv"
+>>> source_file = "test/x264.mkv"
 >>> vsource = ffms.VideoSource(source_file)
 
 # Or you can create an indexer:
@@ -13,18 +13,18 @@ ffms – Python 3 bindings for FFmpegSource
 >>> indexer.format_name
 'matroska'
 >>> indexer.track_info_list
-[TrackInfo(type=0, codec_name='mpeg4')]
+[TrackInfo(type=0, codec_name='h264')]
 
 # Then create the index for the video source:
 >>> index = indexer.do_indexing(-1)
->>> track_n = index.get_first_indexed_track_of_type(ffms.FFMS_TYPE_VIDEO)
->>> vsource = ffms.VideoSource(source_file, track_n, index)
+>>> track_number = index.get_first_indexed_track_of_type(ffms.FFMS_TYPE_VIDEO)
+>>> vsource = ffms.VideoSource(source_file, track_number, index)
 
 # Extract information from the video source:
 >>> vsource.properties.NumFrames
 8
 >>> vsource.track.keyframes
-[0, 1, 2, 3, 4, 5, 6, 7]
+[0, 5]
 >>> vsource.track.timecodes
 [0.0, 1000.0, 2000.0, 3000.0, 4000.0, 5000.0, 6000.0, 7000.0]
 

@@ -15,8 +15,8 @@ class TestFFMS(unittest.TestCase):
     test_dir = "test"
 
     tests = [
-            (SourceInfo("xvid.mkv", "matroska"), [
-                TrackInfo(ffms.FFMS_TYPE_VIDEO, "mpeg4"),
+            (SourceInfo("x264.mkv", "matroska"), [
+                TrackInfo(ffms.FFMS_TYPE_VIDEO, "h264"),
                 ]),
         ]
 

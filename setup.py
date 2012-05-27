@@ -82,7 +82,7 @@ def cfg_to_args(path='setup.cfg'):
             section, option = D1_D2_SETUP_ARGS[arg]
 
         else:
-            # The distutils field name is the same thant packaging's
+            # The distutils field name is the same as packaging's
             section = D1_D2_SETUP_ARGS[arg][0]
             option = arg
 
