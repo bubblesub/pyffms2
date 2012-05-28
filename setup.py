@@ -3,7 +3,12 @@
 # Hand-tweaked to support environment markers.
 import codecs
 import re
-from distutils.core import setup
+try:
+    from setuptools import setup
+    SETUPTOOLS = True
+except ImportError:
+    from distutils.core import setup
+    SETUPTOOLS = False
 from configparser import RawConfigParser
 
 # For environment markers
@@ -13,15 +18,6 @@ import sys
 
 python_version = "{0.major}.{0.minor}".format(sys.version_info)
 python_full_version = sys.version.split()[0]
-
-ENVIRON_FIELDS = {
-    ("metadata", "requires_python"),
-    ("metadata", "requires_external"),
-    ("metadata", "requires_dist"),
-    ("metadata", "provides_dist"),
-    ("metadata", "obsoletes_dist"),
-    ("metadata", "classifier"),
-    }
 
 
 def split_multiline(value):
@@ -97,14 +93,27 @@ def cfg_to_args(path='setup.cfg'):
                         "py_modules": ("files", "modules"),  # **
                         }
 
-    MULTI_FIELDS = ("classifiers",
+    MULTI_FIELDS = {"classifiers",
                     "platforms",
                     "requires",
                     "provides",
                     "obsoletes",
                     "packages",
                     "scripts",
-                    "py_modules")
+                    "py_modules"}
+
+    ENVIRON_FIELDS = {("metadata", "requires_python"),
+                      ("metadata", "requires_external"),
+                      ("metadata", "requires_dist"),
+                      ("metadata", "provides_dist"),
+                      ("metadata", "obsoletes_dist"),
+                      ("metadata", "classifier")}
+
+    if SETUPTOOLS:
+        D1_D2_SETUP_ARGS["install_requires"] = D1_D2_SETUP_ARGS["requires"]
+        MULTI_FIELDS.add("install_requires")
+        del D1_D2_SETUP_ARGS["requires"]
+        MULTI_FIELDS.remove("requires")
 
     def has_get_option(config, section, option):
         if config.has_option(section, option):
