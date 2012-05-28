@@ -10,7 +10,7 @@ __all__ = ["get_library"]
 
 def get_library(name, mode=ctypes.DEFAULT_MODE, handle=None,
                 use_errno=False, use_last_error=False, *,
-                win32_format="lib{}.dll", win64_format="lib{}.dll",
+                win32_format="lib{}.dll", win64_format=None,
                 win_class_name="CDLL"):
     """Find and load a shared library.
     """
@@ -29,7 +29,7 @@ if os.name == "nt":
             return win32_format
     else:
         def get_win_format(win32_format, win64_format):
-            return win64_format
+            return win64_format if win64_format else win32_format
 
     def get_library_path(name, win32_format, win64_format):
         win_formats = get_win_format(win32_format, win64_format)
