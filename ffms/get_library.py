@@ -32,20 +32,27 @@ if os.name == "nt":
             return win64_format
 
     def get_library_path(name, win32_format, win64_format):
-        dll_name = get_win_format(win32_format, win64_format).format(name)
-        if os.path.isfile(dll_name):
-            lib_path = dll_name
-        else:
-            lib_path = find_library(dll_name)
-            if not lib_path:
-                try:
-                    script_path = os.path.abspath(__file__)
-                except NameError:
-                    pass
-                else:
-                    path = os.path.join(os.path.dirname(script_path), dll_name)
-                    if os.path.isfile(path):
-                        lib_path = path
+        win_formats = get_win_format(win32_format, win64_format)
+        if isinstance(win_formats, str):
+            win_formats = [win_formats]
+        for win_format in win_formats:
+            dll_name = win_format.format(name)
+            if os.path.isfile(dll_name):
+                lib_path = dll_name
+            else:
+                lib_path = find_library(dll_name)
+                if not lib_path:
+                    try:
+                        script_path = os.path.abspath(__file__)
+                    except NameError:
+                        pass
+                    else:
+                        path = os.path.join(os.path.dirname(script_path),
+                                            dll_name)
+                        if os.path.isfile(path):
+                            lib_path = path
+            if lib_path:
+                break
         return lib_path
 
     def load_library(library_path, mode, handle, use_errno, use_last_error,
