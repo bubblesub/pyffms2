@@ -42,6 +42,7 @@ def eval_environ(value):
                     "(\\w+(\\.\\w+)?|'.*?'|\".*?\")"
                     "(\s+(or|and)\s+)?)+$", expr):
                 raise ValueError("bad environment marker: {!r}".format(expr))
+            expr = re.sub(r"(platform.\w+)", r"\1()", expr)
             new_value = parts[0] if eval(expr) else None
         return new_value
 
