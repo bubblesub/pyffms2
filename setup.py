@@ -9,14 +9,17 @@ try:
 except ImportError:
     from distutils.core import setup
     SETUPTOOLS = False
-from configparser import RawConfigParser
+try:
+    from configparser import RawConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser
 
 # For environment markers
 import platform #@UnusedImport
 import os #@UnusedImport
 import sys
 
-python_version = "{0.major}.{0.minor}".format(sys.version_info)
+python_version = "%s.%s" % sys.version_info[:2]
 python_full_version = sys.version.split()[0]
 
 
@@ -41,7 +44,7 @@ def eval_environ(value):
                     "(in|==|!=|not in)\\s+"
                     "(\\w+(\\.\\w+)?|'.*?'|\".*?\")"
                     "(\s+(or|and)\s+)?)+$", expr):
-                raise ValueError("bad environment marker: {!r}".format(expr))
+                raise ValueError("bad environment marker: %r" % (expr,))
             expr = re.sub(r"(platform.\w+)", r"\1()", expr)
             new_value = parts[0] if eval(expr) else None
         return new_value
@@ -94,21 +97,21 @@ def cfg_to_args(path='setup.cfg'):
                         "py_modules": ("files", "modules"),  # **
                         }
 
-    MULTI_FIELDS = {"classifiers",
-                    "platforms",
-                    "requires",
-                    "provides",
-                    "obsoletes",
-                    "packages",
-                    "scripts",
-                    "py_modules"}
+    MULTI_FIELDS = set(["classifiers",
+                        "platforms",
+                        "requires",
+                        "provides",
+                        "obsoletes",
+                        "packages",
+                        "scripts",
+                        "py_modules"])
 
-    ENVIRON_FIELDS = {("metadata", "requires_python"),
-                      ("metadata", "requires_external"),
-                      ("metadata", "requires_dist"),
-                      ("metadata", "provides_dist"),
-                      ("metadata", "obsoletes_dist"),
-                      ("metadata", "classifier")}
+    ENVIRON_FIELDS = set([("metadata", "requires_python"),
+                          ("metadata", "requires_external"),
+                          ("metadata", "requires_dist"),
+                          ("metadata", "provides_dist"),
+                          ("metadata", "obsoletes_dist"),
+                          ("metadata", "classifier")])
 
     if SETUPTOOLS:
         D1_D2_SETUP_ARGS["install_requires"] = D1_D2_SETUP_ARGS["requires"]
