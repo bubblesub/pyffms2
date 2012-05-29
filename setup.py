@@ -41,9 +41,9 @@ def eval_environ(value):
         else:
             expr = parts[1].lstrip()
             if not re.match("^((\\w+(\\.\\w+)?|'.*?'|\".*?\")\\s+"
-                    "(in|==|!=|not in)\\s+"
-                    "(\\w+(\\.\\w+)?|'.*?'|\".*?\")"
-                    "(\s+(or|and)\s+)?)+$", expr):
+                            "(in|==|!=|not in)\\s+"
+                            "(\\w+(\\.\\w+)?|'.*?'|\".*?\")"
+                            "(\s+(or|and)\s+)?)+$", expr):
                 raise ValueError("bad environment marker: %r" % (expr,))
             expr = re.sub(r"(platform.\w+)", r"\1()", expr)
             new_value = parts[0] if eval(expr) else None

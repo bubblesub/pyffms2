@@ -13,6 +13,14 @@ except ImportError:
 
 KEEP_INDEX_FILES = True
 
+AUDIO_FORMATS = {
+    ffms.FFMS_FMT_U8: "8-bit",
+    ffms.FFMS_FMT_S16: "16-bit",
+    ffms.FFMS_FMT_S32: "32-bit",
+    ffms.FFMS_FMT_FLT: "float",
+    ffms.FFMS_FMT_DBL: "double",
+}
+
 
 def parse_args():
     parser = argparse.ArgumentParser("FFMS Test")
@@ -74,13 +82,8 @@ def main():
             elif type_ == ffms.FFMS_TYPE_AUDIO:
                 asource = ffms.AudioSource(source_file, n, index)
                 aprops = asource.properties
-                sample_format_name = {
-                    ffms.FFMS_FMT_U8: "8-bit",
-                    ffms.FFMS_FMT_S16: "16-bit",
-                    ffms.FFMS_FMT_S32: "32-bit",
-                    ffms.FFMS_FMT_FLT: "float",
-                    ffms.FFMS_FMT_DBL: "double"
-                    }.get(aprops.SampleFormat, "unknown")
+                sample_format_name = AUDIO_FORMATS.get(
+                    aprops.SampleFormat, "unknown")
                 print("{}: audio track: ".format(n))
                 print("\tcodec =", codec_name)
                 print("\tsample rate =", aprops.SampleRate),

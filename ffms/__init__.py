@@ -73,7 +73,7 @@ __all__ = [
     "FFMS_SOURCE_LAVF", "FFMS_SOURCE_MATROSKA", "FFMS_TYPE_ATTACHMENT",
     "FFMS_TYPE_AUDIO", "FFMS_TYPE_DATA", "FFMS_TYPE_SUBTITLE",
     "FFMS_TYPE_UNKNOWN", "FFMS_TYPE_VIDEO",
-    ]
+]
 
 FFINDEX_EXT = ".ffindex"
 
@@ -306,8 +306,9 @@ class Index:
              ic=None, ic_private=None):
         """Index a given source file.
         """
-        return Indexer(source_file).do_indexing(index_mask, dump_mask,
-             anc, anc_private, error_handling, ic, ic_private)
+        return Indexer(source_file).do_indexing(
+            index_mask, dump_mask, anc, anc_private, error_handling,
+            ic, ic_private)
 
     @classmethod
     def read(cls, index_file=None, source_file=None):
@@ -414,8 +415,8 @@ class Source:
                         raise Error("no suitable track",
                                     FFMS_ERROR_INDEX, FFMS_ERROR_NOT_AVAILABLE)
                 index = indexer.do_indexing([track_number])
-        self.track_number = (track_number if track_number is not None
-            else index.get_first_indexed_track_of_type(self.type))
+        self.track_number = (track_number if track_number is not None else
+                             index.get_first_indexed_track_of_type(self.type))
         self._index = index
         self.source_file = source_file
         self._track = None
@@ -541,16 +542,19 @@ class VideoSource(Source, VideoType):
         """
         if self._track is None:
             self._track = VideoTrack(FFMS_GetTrackFromVideo(self._source),
-                                self.track_number, self.source_file)
+                                     self.track_number, self.source_file)
         return self._track
 
     def _init_planes(self):
         f = self.frame
         height = f.ScaledHeight if f.ScaledHeight > 0 else f.EncodedHeight
-        self.planes = [numpy.frombuffer(
-            cast(f.Data[n], POINTER(f.Linesize[n] * height * c_uint8))[0],
-            numpy.uint8) if f.Linesize[n] else numpy.empty((0,), numpy.uint8)
-            for n in range(len(f.Data))]
+        self.planes = [
+            numpy.frombuffer(
+                cast(f.Data[n], POINTER(f.Linesize[n] * height * c_uint8))[0],
+                numpy.uint8
+            ) if f.Linesize[n] else numpy.empty((0,), numpy.uint8)
+            for n in range(len(f.Data))
+        ]
 
 
 class AudioSource(Source, AudioType):
@@ -562,7 +566,7 @@ class AudioSource(Source, AudioType):
         numpy.int32,
         numpy.float32,
         numpy.float64,
-        ]
+    ]
     DEFAULT_RATE = 100
 
     def __init__(self, source_file, track_number=None, index=None,
@@ -611,7 +615,7 @@ class AudioSource(Source, AudioType):
         """
         if self._track is None:
             self._track = AudioTrack(FFMS_GetTrackFromAudio(self._source),
-                                self.track_number, self.source_file)
+                                     self.track_number, self.source_file)
         return self._track
 
 
@@ -712,8 +716,10 @@ class Track:
         """List of frame information
         """
         if self._frame_info_list is None:
-            self._frame_info_list = [FFMS_GetFrameInfo(self._track, n)[0]
-                for n in range(FFMS_GetNumFrames(self._track))]
+            self._frame_info_list = [
+                FFMS_GetFrameInfo(self._track, n)[0]
+                for n in range(FFMS_GetNumFrames(self._track))
+            ]
         return self._frame_info_list
 
     @property
@@ -722,8 +728,10 @@ class Track:
         """
         if self._timecodes is None:
             time_base = self.time_base
-            self._timecodes = [frame_info.PTS * time_base.Num / time_base.Den
-                for frame_info in self.frame_info_list]
+            self._timecodes = [
+                frame_info.PTS * time_base.Num / time_base.Den
+                for frame_info in self.frame_info_list
+            ]
         return self._timecodes
 
     def write_timecodes(self, timecode_file=None):
