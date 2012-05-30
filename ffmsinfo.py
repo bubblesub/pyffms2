@@ -74,7 +74,7 @@ def main():
                 print("{}: video track:".format(n))
                 print("\tcodec =", codec_name)
                 print("\tresolution =", "{}×{}".format(
-                      frame.EncodedWidth, frame.EncodedHeight))
+                    frame.EncodedWidth, frame.EncodedHeight))
                 print("\taspect ratio =", aspect_ratio)
                 print("\tfps =", vprops.FPSNumerator / vprops.FPSDenominator)
                 print("\tnum frames =", vprops.NumFrames)
