@@ -4,3 +4,4 @@ build
 dist
 MANIFEST
 .*
+ffms2*.dll
