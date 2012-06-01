@@ -106,12 +106,12 @@ def cfg_to_args(path='setup.cfg'):
                         "scripts",
                         "py_modules"])
 
-    ENVIRON_FIELDS = set([("metadata", "requires_python"),
-                          ("metadata", "requires_external"),
-                          ("metadata", "requires_dist"),
-                          ("metadata", "provides_dist"),
-                          ("metadata", "obsoletes_dist"),
-                          ("metadata", "classifier")])
+    ENVIRON_OPTIONS = set([("metadata", "classifier"),
+                           ("metadata", "requires_dist"),
+                           ("metadata", "provides_dist"),
+                           ("metadata", "obsoletes_dist"),
+                           ("metadata", "requires_python"),
+                           ("metadata", "requires_external")])
 
     if SETUPTOOLS:
         D1_D2_SETUP_ARGS["install_requires"] = D1_D2_SETUP_ARGS["requires"]
@@ -171,7 +171,7 @@ def cfg_to_args(path='setup.cfg'):
             # support multiline options
             in_cfg_value = split_multiline(in_cfg_value)
 
-        if (section, option) in ENVIRON_FIELDS:
+        if (section, option) in ENVIRON_OPTIONS:
             in_cfg_value = eval_environ(in_cfg_value)
 
         if in_cfg_value:

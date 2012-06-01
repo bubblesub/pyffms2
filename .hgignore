@@ -5,3 +5,4 @@ dist
 MANIFEST
 .*
 ffms2*.dll
+py2/*
