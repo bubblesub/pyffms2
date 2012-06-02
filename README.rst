@@ -57,7 +57,6 @@ ffmsinfo.py is a demo script showing how this package can be used.
 Requirements
 ------------
 
-- `Python 3.2 <http://www.python.org/>`_
 - `numpy <http://www.numpy.org/>`_
 - `FFmpegSource <http://code.google.com/p/ffmpegsource/>`_
 
@@ -72,4 +71,3 @@ The API was designed to be an object-oriented and Pythonic version
 of the original FFmpegSource API. For more information, you can have a look
 at the `original API documentation
 <http://ffmpegsource.googlecode.com/svn/trunk/doc/ffms2-api.html>`_
-
