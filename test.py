@@ -15,9 +15,10 @@ class TestFFMS(unittest.TestCase):
     test_dir = "test"
 
     tests = [
-            (SourceInfo("x264.mkv", "matroska"),
-             [TrackInfo(ffms.FFMS_TYPE_VIDEO, "h264")]),
-            ]
+        (SourceInfo("x264.mkv", "matroska"), [
+            TrackInfo(ffms.FFMS_TYPE_VIDEO, "h264"),
+        ]),
+    ]
 
     def test_samples(self):
         for source_info, track_info_list in self.tests:
