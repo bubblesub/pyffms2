@@ -185,7 +185,7 @@ def set_log_level(level):
 
 err_msg = create_string_buffer(1024)
 err_info = FFMS_ErrorInfo(FFMS_ERROR_SUCCESS, FFMS_ERROR_SUCCESS,
-                          sizeof(err_msg), addressof(err_msg))
+                          sizeof(err_msg), cast(err_msg, STRING))
 
 
 class Error(Exception):
@@ -443,8 +443,7 @@ class VideoSource(Source, VideoType):
         if not self._source:
             raise Error
         self.properties = FFMS_GetVideoProperties(self._source)[0]
-        self.frame = self.get_frame(0)
-        self._init_planes()
+        self.get_frame(0)
 
     def __del__(self):
         self._FFMS_DestroyVideoSource(self._source)
@@ -458,7 +457,8 @@ class VideoSource(Source, VideoType):
             frame = FFMS_GetFrame(self._source, n, byref(err_info))
             if not frame:
                 raise Error
-        return frame[0]
+        self.frame = frame[0]
+        return self.frame
 
     def get_frame_by_time(self, time):
         """Retrieve a video frame at a given timestamp.
@@ -468,7 +468,8 @@ class VideoSource(Source, VideoType):
             frame = FFMS_GetFrameByTime(self._source, time, byref(err_info))
             if not frame:
                 raise Error
-        return frame[0]
+        self.frame = frame[0]
+        return self.frame
 
     def set_output_format(self, target_formats=None, width=None, height=None,
                           resizer=FFMS_RESIZER_BICUBIC):
@@ -496,13 +497,11 @@ class VideoSource(Source, VideoType):
                                    width, height, resizer, byref(err_info))
         if r:
             raise Error
-        self._init_planes()
 
     def reset_output_format(self):
         """Reset the video output format.
         """
         FFMS_ResetOutputFormatV(self._source)
-        self._init_planes()
 
     @contextlib.contextmanager
     def output_format(self, target_formats=None, width=None, height=None,
@@ -545,16 +544,21 @@ class VideoSource(Source, VideoType):
                                      self.track_number, self.source_file)
         return self._track
 
-    def _init_planes(self):
-        f = self.frame
-        height = f.ScaledHeight if f.ScaledHeight > 0 else f.EncodedHeight
-        self.planes = [
+    def _get_planes(self):
+        height = (self.ScaledHeight if self.ScaledHeight > 0
+                  else self.EncodedHeight)
+        return [
             numpy.frombuffer(
-                cast(f.Data[n], POINTER(f.Linesize[n] * height * c_uint8))[0],
+                cast(
+                    self.Data[n],
+                    POINTER(self.Linesize[n] * height * c_uint8)
+                )[0],
                 numpy.uint8
-            ) if f.Linesize[n] else numpy.empty((0,), numpy.uint8)
-            for n in range(len(f.Data))
+            ) if self.Linesize[n] else numpy.empty((0,), numpy.uint8)
+            for n in range(len(self.Data))
         ]
+
+    FFMS_Frame.planes = property(_get_planes)
 
 
 class AudioSource(Source, AudioType):

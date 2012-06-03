@@ -43,11 +43,7 @@ Retrieve a video frame:
 >>> frame = vsource.get_frame(0)
 >>> frame.EncodedWidth, frame.EncodedHeight
 (128, 72)
-
-
-Picture planes from the last retrieved frame:
-
->>> vsource.planes[0]
+>>> frame.planes[0]
 array([16, 16, 16, ..., 16, 16, 16], dtype=uint8)
 
 
