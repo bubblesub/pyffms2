@@ -38,14 +38,24 @@ def get_library(name, mode=ctypes.DEFAULT_MODE, handle=None,
 
 
 if os.name == "nt":
+    import platform
+    import re
     import sys
 
-    if sys.maxsize == 2 ** 31 - 1:
-        def get_win_format(win32_format, win64_format):
-            return win32_format
-    else:
+    def get_bit_architecture():
+        if sys.platform == "cli" or sys.platform.startswith("java"):
+            return int(re.match("^(\d+)", platform.architecture()[0]).group(1))
+        try:
+            return int.bit_length(sys.maxsize) + 1
+        except AttributeError:
+            return len(bin(sys.maxsize).lstrip("-0b")) + 1
+
+    if get_bit_architecture() == 64:
         def get_win_format(win32_format, win64_format):
             return win64_format if win64_format else win32_format
+    else:
+        def get_win_format(win32_format, win64_format):
+            return win32_format
 
     def get_library_path(name, win32_format, win64_format):
         win_formats = get_win_format(win32_format, win64_format)
