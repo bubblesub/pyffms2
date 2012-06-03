@@ -57,8 +57,8 @@ ffmsinfo.py is a demo script showing how this package can be used.
 Requirements
 ------------
 
-- `numpy <http://www.numpy.org/>`_
 - `FFmpegSource <http://code.google.com/p/ffmpegsource/>`_
+- `numpy <http://www.numpy.org/>`_
 
 
 Additional requirements under Windows
