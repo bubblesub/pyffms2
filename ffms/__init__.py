@@ -207,8 +207,6 @@ class Error(Exception):
 class Indexer:
     """FFMS_Indexer
     """
-    TrackInfo = namedtuple("TrackInfo", ("type", "codec_name"))
-
     def __init__(self, source_file, demuxer=FFMS_SOURCE_DEFAULT):
         """Create an indexer object for the given source file.
         """
@@ -230,12 +228,13 @@ class Indexer:
         """
         self._assert_unindexed()
         if self._track_info_list is None:
+            TrackInfo = namedtuple("TrackInfo", ("type", "codec_name"))
             self._track_info_list = []
             for n in range(FFMS_GetNumTracksI(self._indexer)):
                 codec_name = FFMS_GetCodecNameI(self._indexer, n)
                 if isinstance(codec_name, bytes):
                     codec_name = codec_name.decode()
-                info = self.TrackInfo(FFMS_GetTrackTypeI(self._indexer, n),
+                info = TrackInfo(FFMS_GetTrackTypeI(self._indexer, n),
                                       codec_name)
                 self._track_info_list.append(info)
         return self._track_info_list
@@ -574,14 +573,14 @@ FFMS_Frame.planes = property(_get_planes)
 class AudioSource(Source, AudioType):
     """FFMS_AudioSource
     """
-    SAMPLE_TYPES = [
+    DEFAULT_RATE = 100
+    _SAMPLE_TYPES = [
         numpy.uint8,
         numpy.int16,
         numpy.int32,
         numpy.float32,
         numpy.float64,
     ]
-    DEFAULT_RATE = 100
 
     def __init__(self, source_file, track_number=None, index=None,
                  delay_mode=FFMS_DELAY_FIRST_VIDEO_TRACK):
@@ -595,7 +594,7 @@ class AudioSource(Source, AudioType):
         if not self._source:
             raise Error
         self.properties = FFMS_GetAudioProperties(self._source)[0]
-        self.sample_type = self.SAMPLE_TYPES[self.properties.SampleFormat]
+        self.sample_type = self._SAMPLE_TYPES[self.properties.SampleFormat]
 
     def __del__(self):
         self._FFMS_DestroyAudioSource(self._source)
