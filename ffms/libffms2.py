@@ -15,7 +15,7 @@ lib = get_library(
 
 STRING = c_char_p
 
-FFMS_VERSION = ((2 << 24) | (17 << 16) | (0 << 8) | 0)
+FFMS_VERSION = ((2 << 24) | (17 << 16) | (2 << 8) | 0)
 
 
 class FFMS_ErrorInfo(Structure):
