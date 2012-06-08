@@ -124,6 +124,8 @@ else:
 if FFMS_SetOutputFormatV2 is None:
     def FFMS_SetOutputFormatV2(source, target_formats, width, height, resizer,
                                p_err_info):
+        """Substitute when using FFMS 2.15-
+        """
         while target_formats and target_formats[-1] < 0:
             target_formats = target_formats[:-1]
         return FFMS_SetOutputFormatV(source, list_to_mask(target_formats),
@@ -131,7 +133,7 @@ if FFMS_SetOutputFormatV2 is None:
 
 
 def get_version_info():
-    """Return FFMS_VERSION as a tuple.
+    """Return library FFMS_VERSION as a tuple.
     """
     VersionInfo = namedtuple("VersionInfo",
                              ("major", "minor", "micro", "bump"))
@@ -143,7 +145,7 @@ def get_version_info():
 
 
 def get_version():
-    """Return FFMS_VERSION as a string.
+    """Return library FFMS_VERSION as a string.
     """
     version_info = get_version_info()
     for n, e in enumerate(reversed(version_info[1:])):
@@ -420,8 +422,10 @@ class Source:
                         raise Error("no suitable track",
                                     FFMS_ERROR_INDEX, FFMS_ERROR_NOT_AVAILABLE)
                 index = indexer.do_indexing([track_number])
-        self.track_number = (track_number if track_number is not None else
-                             index.get_first_indexed_track_of_type(self.type))
+        self.track_number = (
+            track_number if track_number is not None
+            else index.get_first_indexed_track_of_type(self.type)
+        )
         self._index = index
         self.source_file = source_file
         self._track = None
@@ -549,21 +553,22 @@ class VideoSource(Source, VideoType):
                                      self.track_number, self.source_file)
         return self._track
 
-    def _get_planes(self):
-        height = (self.ScaledHeight if self.ScaledHeight > 0
-                  else self.EncodedHeight)
-        return [
-            numpy.frombuffer(
-                cast(
-                    self.Data[n],
-                    POINTER(self.Linesize[n] * height * c_uint8)
-                )[0],
-                numpy.uint8
-            ) if self.Linesize[n] else numpy.empty((0,), numpy.uint8)
-            for n in range(len(self.Data))
-        ]
 
-    FFMS_Frame.planes = property(_get_planes)
+def _get_planes(frame):
+    height = (frame.ScaledHeight if frame.ScaledHeight > 0
+              else frame.EncodedHeight)
+    return [
+        numpy.frombuffer(
+            cast(
+                frame.Data[n],
+                POINTER(frame.Linesize[n] * height * c_uint8)
+            )[0],
+            numpy.uint8
+        ) if frame.Linesize[n] else numpy.empty((0,), numpy.uint8)
+        for n in range(len(frame.Data))
+    ]
+
+FFMS_Frame.planes = property(_get_planes)
 
 
 class AudioSource(Source, AudioType):
@@ -637,9 +642,9 @@ class AudioLinearAccess(Sized, Iterable):
         self.num_samples = parent.properties.NumSamples
         self.start_frame = (self.num_samples + start_frame
                             if start_frame < 0 else start_frame)
-        self.end_frame = (self.num_samples if end_frame is None else
-                          self.num_samples + end_frame if end_frame < 0 else
-                          end_frame)
+        self.end_frame = (self.num_samples if end_frame is None
+                          else self.num_samples + end_frame if end_frame < 0
+                          else end_frame)
         sample_rate = parent.properties.SampleRate
         self.count_l, mod = divmod(sample_rate, rate)
         if not mod:
