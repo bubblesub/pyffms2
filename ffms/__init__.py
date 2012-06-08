@@ -20,7 +20,6 @@
 import contextlib
 import functools
 import math
-import multiprocessing
 import os
 
 from collections import namedtuple
@@ -355,6 +354,12 @@ class Index:
         """
         return FFMS_GetSourceType(self._index)
 
+    @property
+    def error_handling(self):
+        """Error handling mode that was used when creating the index.
+        """
+        return FFMS_GetErrorHandling(self._index)
+
     def get_first_track_of_type(self, track_type=FFMS_TYPE_VIDEO):
         """Get the track number of the first track of a given type.
         """
@@ -426,8 +431,9 @@ class VideoSource(Source, VideoType):
     """FFMS_VideoSource
     """
     try:
-        MAX_THREADS = min(multiprocessing.cpu_count(), 8)
-    except NotImplementedError:
+        from multiprocessing import cpu_count
+        MAX_THREADS = min(cpu_count(), 8)
+    except (ImportError, NotImplementedError):
         MAX_THREADS = 1
 
     def __init__(self, source_file, track_number=None, index=None,
@@ -436,14 +442,14 @@ class VideoSource(Source, VideoType):
         """
         self._FFMS_DestroyVideoSource = FFMS_DestroyVideoSource
         super().__init__(source_file, track_number, index)
-        self.num_threads = num_threads if num_threads else self.MAX_THREADS
+        self.num_threads = (num_threads if num_threads is not None
+                            else self.MAX_THREADS)
         self._source = FFMS_CreateVideoSource(
             get_encoded_path(self.source_file), self.track_number,
             self._index._index, self.num_threads, seek_mode, byref(err_info))
         if not self._source:
             raise Error
         self.properties = FFMS_GetVideoProperties(self._source)[0]
-        self.get_frame(0)
 
     def __del__(self):
         self._FFMS_DestroyVideoSource(self._source)
@@ -457,8 +463,7 @@ class VideoSource(Source, VideoType):
             frame = FFMS_GetFrame(self._source, n, byref(err_info))
             if not frame:
                 raise Error
-        self.frame = frame[0]
-        return self.frame
+        return frame[0]
 
     def get_frame_by_time(self, time):
         """Retrieve a video frame at a given timestamp.
@@ -468,29 +473,29 @@ class VideoSource(Source, VideoType):
             frame = FFMS_GetFrameByTime(self._source, time, byref(err_info))
             if not frame:
                 raise Error
-        self.frame = frame[0]
-        return self.frame
+        return frame[0]
 
     def set_output_format(self, target_formats=None, width=None, height=None,
                           resizer=FFMS_RESIZER_BICUBIC):
         """Set the output format for video frames.
         """
+        frame = self.get_frame(0)
         if target_formats is None:
-            target_formats = [self.frame.ConvertedPixelFormat
-                              if self.frame.ConvertedPixelFormat > 0
-                              else self.frame.EncodedPixelFormat]
+            target_formats = [frame.ConvertedPixelFormat
+                              if frame.ConvertedPixelFormat > 0
+                              else frame.EncodedPixelFormat]
         elif isinstance(target_formats, int):
             target_formats = mask_to_list(target_formats)
         if target_formats[-1] >= 0:
             target_formats.append(-1)
         if width is None:
-            width = (self.frame.ScaledWidth
-                     if self.frame.ScaledWidth > 0
-                     else self.frame.EncodedWidth)
+            width = (frame.ScaledWidth
+                     if frame.ScaledWidth > 0
+                     else frame.EncodedWidth)
         if height is None:
-            height = (self.frame.ScaledHeight
-                      if self.frame.ScaledHeight > 0
-                      else self.frame.EncodedHeight)
+            height = (frame.ScaledHeight
+                      if frame.ScaledHeight > 0
+                      else frame.EncodedHeight)
         target_formats = cast((c_int * len(target_formats))(*target_formats),
                               POINTER(c_int))
         r = FFMS_SetOutputFormatV2(self._source, target_formats,

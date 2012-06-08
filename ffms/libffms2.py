@@ -371,3 +371,10 @@ FFMS_GetPresentSources.argtypes = []
 FFMS_GetEnabledSources = lib.FFMS_GetEnabledSources
 FFMS_GetEnabledSources.restype = c_int
 FFMS_GetEnabledSources.argtypes = []
+
+try:
+    FFMS_GetErrorHandling = lib.FFMS_GetErrorHandling
+    FFMS_GetErrorHandling.restype = c_int
+    FFMS_GetErrorHandling.argtypes = [POINTER(FFMS_Index)]
+except AttributeError:
+    FFMS_GetErrorHandling = None
