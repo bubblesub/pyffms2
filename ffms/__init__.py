@@ -26,6 +26,7 @@ from collections import namedtuple
 from collections import Iterable, Sized
 from ctypes import * #@UnusedWildImport
 
+#TODO: Use stdlib if numpy is not available.
 import numpy
 
 from .libffms2 import * #@UnusedWildImport
@@ -235,7 +236,7 @@ class Indexer:
                 if isinstance(codec_name, bytes):
                     codec_name = codec_name.decode()
                 info = TrackInfo(FFMS_GetTrackTypeI(self._indexer, n),
-                                      codec_name)
+                                 codec_name)
                 self._track_info_list.append(info)
         return self._track_info_list
 
