@@ -47,8 +47,8 @@ if os.name == "nt":
             return int(re.match("^(\d+)", platform.architecture()[0]).group(1))
         try:
             return int.bit_length(sys.maxsize) + 1
-        except AttributeError:
-            return len(bin(sys.maxsize).lstrip("-0b")) + 1
+        except (TypeError, AttributeError):
+            return 64 if sys.maxsize > 2 ** 32 else 32
 
     if get_bit_architecture() == 64:
         def get_win_format(win32_format, win64_format):

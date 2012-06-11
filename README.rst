@@ -1,5 +1,5 @@
-ffms – Python 3 bindings for FFmpegSource
-=========================================
+ffms – Python bindings for FFmpegSource
+=======================================
 
 
 Example usage
