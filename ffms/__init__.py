@@ -26,7 +26,7 @@ from collections import namedtuple
 from collections import Iterable, Sized
 from ctypes import * #@UnusedWildImport
 
-#TODO: Use stdlib if numpy is not available.
+# TODO: Use stdlib if numpy is not available.
 import numpy
 
 from .libffms2 import * #@UnusedWildImport
