@@ -5,7 +5,8 @@ dist/*
 *.egg-info/*
 MANIFEST
 *.pyc
-*.pyo
 *$py.class
+*.pyo
+wininst.cmd
 
 ffms2*.dll
