@@ -19,7 +19,7 @@ AUDIO_FORMATS = {
 
 
 def parse_args():
-    parser = argparse.ArgumentParser("FFMS Test")
+    parser = argparse.ArgumentParser("ffmsinfo")
     parser.add_argument("source_files", type=str, nargs="+")
     parser.add_argument("-v", "--version", action="version",
                         version="FFMS version = {}".format(ffms.get_version()))
@@ -55,13 +55,13 @@ def main():
                 try:
                     index.write()
                 except ffms.Error as e:
-                    print(e)
+                    print(e, file=sys.stderr)
 
         for n, (type_, codec_name) in enumerate(track_info_list):
             if type_ == ffms.FFMS_TYPE_VIDEO:
                 vsource = ffms.VideoSource(source_file, n, index)
                 vprops = vsource.properties
-                frame = vsource.frame
+                frame = vsource.get_frame(0)
                 sar_num, sar_den = ((vprops.SARNum, vprops.SARDen)
                                     if vprops.SARNum and vprops.SARDen
                                     else (1, 1))
