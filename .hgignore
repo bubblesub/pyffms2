@@ -2,11 +2,11 @@ syntax: glob
 .*
 build/*
 dist/*
-*.egg-info/*
 MANIFEST
+*.cmd
+*.egg-info/*
 *.pyc
-*$py.class
 *.pyo
-wininst.cmd
+*$py.class
 
 ffms2*.dll
