@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import sys
 
 import setup
@@ -9,7 +10,6 @@ import setup
 
 if os.name == "nt":
     import platform
-    import re
     import shutil
 
     def get_bit_architecture():
@@ -29,7 +29,6 @@ if os.name == "nt":
         config["files"]["package_data"] += "\nffms = ffms2*.dll"
 
 else:
-    import re
     import subprocess
     from ctypes.util import find_library
 
