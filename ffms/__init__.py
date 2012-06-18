@@ -279,9 +279,9 @@ class Indexer:
         index = FFMS_DoIndexing(self._indexer, index_mask, dump_mask,
                                 anc, anc_private, error_handling,
                                 ic, ic_private, byref(err_info))
+        self._indexer = None
         if not index:
             raise Error
-        self._indexer = None
         return Index(index, source_file=self.source_file)
 
     def _assert_unindexed(self):
