@@ -10,3 +10,4 @@ MANIFEST
 *$py.class
 
 ffms2*.dll
+*.ffindex
