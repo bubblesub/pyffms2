@@ -8,7 +8,7 @@ from .get_library import get_library
 
 lib = get_library(
     "ffms2",
-    win32_format="{}.dll",
+    win_format="{}.dll",
     win64_format=["{}-x64.dll", "{}.dll"],
     win_class_name="WinDLL"
 )
