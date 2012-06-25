@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 import os
 import re
 import sys
@@ -45,10 +42,6 @@ else:
             if path_name:
                 continue
             if subprocess.call(["which", "apt-get"]):
-                raise OSError("can’t find {!r} library".format(name))
-            print("Installing {!r}…".format(external))
+                raise OSError("can't find {!r} library".format(name))
+            print("Installing {!r}...".format(external))
             subprocess.call(["sudo", "apt-get", "install", external])
-
-
-if __name__ == "__main__":
-    sys.exit(hook({}))
