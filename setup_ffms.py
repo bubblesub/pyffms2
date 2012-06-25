@@ -45,7 +45,7 @@ else:
             if path_name:
                 continue
             if subprocess.call(["which", "apt-get"]):
-                raise OSError("can’t find {} library".format(name))
+                raise OSError("can’t find {!r} library".format(name))
             print("Installing {!r}…".format(external))
             subprocess.call(["sudo", "apt-get", "install", external])
 
