@@ -93,6 +93,8 @@ if os.name == "nt":
                                 use_errno, use_last_error)
             if win_attr_format:
                 class Lib:
+                    """Windows library
+                    """
                     def __init__(self, lib, attr_format):
                         self.lib = lib
                         self.attr_format = attr_format
