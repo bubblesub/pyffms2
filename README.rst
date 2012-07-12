@@ -47,13 +47,13 @@ Retrieve a video frame:
 array([16, 16, 16, ..., 16, 16, 16], dtype=uint8)
 
 
-ffmsinfo.py is a demo script showing how this package can be used.
+``ffmsinfo.py`` is a demo script showing how this package can be used.
 
 
 Installation
 ------------
 
-You can use the setup script::
+You can use the ``setup.py`` script::
 
   $ ./setup.py install
 
