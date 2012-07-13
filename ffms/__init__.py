@@ -23,13 +23,14 @@ import os
 
 from collections import namedtuple
 from collections import Iterable, Sized
-from ctypes import * #@UnusedWildImport
+from ctypes import *
 
 # TODO: Use stdlib if numpy is not available.
 import numpy
 
-from .libffms2 import * #@UnusedWildImport
-from .enums import * #@UnusedWildImport
+from .libffms2 import *
+from .enums import *
+from .av_log import *
 
 
 __all__ = [
@@ -72,6 +73,9 @@ __all__ = [
     "FFMS_SOURCE_LAVF", "FFMS_SOURCE_MATROSKA", "FFMS_TYPE_ATTACHMENT",
     "FFMS_TYPE_AUDIO", "FFMS_TYPE_DATA", "FFMS_TYPE_SUBTITLE",
     "FFMS_TYPE_UNKNOWN", "FFMS_TYPE_VIDEO",
+
+    "AV_LOG_QUIET", "AV_LOG_PANIC", "AV_LOG_FATAL", "AV_LOG_ERROR",
+    "AV_LOG_WARNING", "AV_LOG_INFO", "AV_LOG_VERBOSE", "AV_LOG_DEBUG",
 ]
 
 FFINDEX_EXT = ".ffindex"
@@ -178,7 +182,7 @@ def get_log_level():
     return FFMS_GetLogLevel()
 
 
-def set_log_level(level):
+def set_log_level(level=AV_LOG_QUIET):
     """Set FFmpeg message level.
     """
     return FFMS_SetLogLevel(level)
