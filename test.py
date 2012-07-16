@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Test suite for ffms
 """
+
 import os
 import unittest
 from collections import namedtuple

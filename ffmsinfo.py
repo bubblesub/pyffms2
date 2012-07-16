@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Extract information from media files.
 """
+
 import sys
 import argparse
 
