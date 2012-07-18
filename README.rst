@@ -57,8 +57,8 @@ You can use the ``setup.py`` script::
 
   $ ./setup.py install
 
-On Windows, you can use one of the MSI binary packages provided
-on the `download page <https://bitbucket.org/spirit/ffms/downloads>`_.
+On Windows, you can use one of the MSI binary packages provided on the
+`download page <https://bitbucket.org/spirit/ffms/downloads>`_.
 
 
 Requirements
@@ -73,5 +73,5 @@ Requirements
 
 The API was designed to be an object-oriented and Pythonic version
 of the original FFmpegSource API. For more information, you can have a look
-at the `original API documentation
+at `the original API documentation
 <http://ffmpegsource.googlecode.com/svn/trunk/doc/ffms2-api.html>`_.
