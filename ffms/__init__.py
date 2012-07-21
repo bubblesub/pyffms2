@@ -230,7 +230,7 @@ class Indexer:
     def track_info_list(self):
         """List of track information
         """
-        self._assert_unindexed()
+        self._check_indexer()
         if self._track_info_list is None:
             TrackInfo = namedtuple("TrackInfo", ("type", "codec_name"))
             self._track_info_list = []
@@ -247,7 +247,7 @@ class Indexer:
     def format_name(self):
         """Name of the container format
         """
-        self._assert_unindexed()
+        self._check_indexer()
         format_name = FFMS_GetFormatNameI(self._indexer)
         if isinstance(format_name, bytes):
             format_name = format_name.decode()
@@ -257,7 +257,7 @@ class Indexer:
     def source_type(self):
         """Source module that was used to open the indexer
         """
-        self._assert_unindexed()
+        self._check_indexer()
         return FFMS_GetSourceTypeI(self._indexer)
 
     def do_indexing(self, index_mask=0, dump_mask=0,
@@ -266,7 +266,7 @@ class Indexer:
                     ic=None, ic_private=None):
         """Index the file.
         """
-        self._assert_unindexed()
+        self._check_indexer()
         if isinstance(index_mask, Iterable):
             index_mask = list_to_mask(index_mask)
         if isinstance(dump_mask, Iterable):
@@ -288,9 +288,9 @@ class Indexer:
             raise Error
         return Index(index, source_file=self.source_file)
 
-    def _assert_unindexed(self):
+    def _check_indexer(self):
         if not self._indexer:
-            raise ValueError("can’t reuse indexer after indexing")
+            raise ValueError("indexing already done")
 
 
 class Index:
