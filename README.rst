@@ -72,6 +72,5 @@ Requirements
 
 
 The API was designed to be an object-oriented and Pythonic version
-of the original FFmpegSource API. For more information, you can have a look
-at `the original API documentation
+of `the original FFmpegSource API
 <http://ffmpegsource.googlecode.com/svn/trunk/doc/ffms2-api.html>`_.
