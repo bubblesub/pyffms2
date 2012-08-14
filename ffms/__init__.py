@@ -20,9 +20,13 @@ import contextlib
 import functools
 import math
 import os
+import sys
 
-from collections import namedtuple
-from collections import Iterable, Sized
+from collections import namedtuple, OrderedDict
+try:
+    from collections.abc import Iterable, Sized
+except ImportError:
+    from collections import Iterable, Sized
 from ctypes import *
 
 # TODO: Use stdlib if numpy is not available.
@@ -37,7 +41,8 @@ __all__ = [
     "get_version", "get_version_info", "get_pix_fmt",
     "get_present_sources", "get_enabled_sources",
     "get_log_level", "set_log_level", "Error", "Indexer", "Index",
-    "VideoSource", "AudioSource", "FFINDEX_EXT",
+    "VideoSource", "AudioSource",
+    "FFINDEX_EXT", "DEMUXERS", "AV_LOGS", "DEFAULT_AUDIO_FILENAME_FORMAT",
 
     "FFMS_CH_BACK_CENTER", "FFMS_CH_BACK_LEFT", "FFMS_CH_BACK_RIGHT",
     "FFMS_CH_FRONT_CENTER", "FFMS_CH_FRONT_LEFT",
@@ -80,6 +85,27 @@ __all__ = [
 
 FFINDEX_EXT = ".ffindex"
 
+DEMUXERS = OrderedDict([
+    ("default", FFMS_SOURCE_DEFAULT),
+    ("lavf", FFMS_SOURCE_LAVF),
+    ("matroska", FFMS_SOURCE_MATROSKA),
+    ("haalimpeg", FFMS_SOURCE_HAALIMPEG),
+    ("haaliogg", FFMS_SOURCE_HAALIOGG),
+])
+
+AV_LOGS = [
+    AV_LOG_QUIET,
+    AV_LOG_PANIC,
+    AV_LOG_FATAL,
+    AV_LOG_ERROR,
+    AV_LOG_WARNING,
+    AV_LOG_INFO,
+    AV_LOG_VERBOSE,
+    AV_LOG_DEBUG,
+]
+
+DEFAULT_AUDIO_FILENAME_FORMAT = "%sourcefile%_track%trackzn%.w64"
+
 
 if os.name == "nt":
     import pythoncom #@UnresolvedImport
@@ -88,16 +114,20 @@ if os.name == "nt":
     USE_UTF8_PATHS = True
 
     if USE_UTF8_PATHS:
+        FILENAME_ENCODING = "utf-8"
+
         def get_encoded_path(path):
-            return path.encode()
+            return path.encode(FILENAME_ENCODING)
     else:
         import win32api #@UnresolvedImport
+
+        FILENAME_ENCODING = sys.getfilesystemencoding()
 
         def get_encoded_path(path):
             if not os.path.exists(path):
                 with open(path, "w"):
                     pass
-            return win32api.GetShortPathName(path).encode()
+            return win32api.GetShortPathName(path).encode(FILENAME_ENCODING)
 
     def ffms_init():
         if not getattr(pythoncom, "_initialized", False):
@@ -117,10 +147,10 @@ if os.name == "nt":
 
     ffms_init()
 else:
-    import sys
+    FILENAME_ENCODING = sys.getfilesystemencoding()
 
-    def get_encoded_path(path, encoding=sys.getfilesystemencoding()):
-        return path.encode(encoding)
+    def get_encoded_path(path):
+        return path.encode(FILENAME_ENCODING)
 
     FFMS_Init(0, 0)
 
@@ -261,8 +291,9 @@ class Indexer:
         return FFMS_GetSourceTypeI(self._indexer)
 
     def do_indexing(self, index_mask=0, dump_mask=0,
-                    anc=None, anc_private=None,
-                    error_handling=FFMS_IEH_ABORT,
+                    anc=FFMS_DefaultAudioFilename,
+                    anc_private=DEFAULT_AUDIO_FILENAME_FORMAT,
+                    error_handling=FFMS_IEH_STOP_TRACK,
                     ic=None, ic_private=None):
         """Index the file.
         """
@@ -271,18 +302,18 @@ class Indexer:
             index_mask = list_to_mask(index_mask)
         if isinstance(dump_mask, Iterable):
             dump_mask = list_to_mask(dump_mask)
-        if dump_mask:
-            if not anc:
-                anc = FFMS_DefaultAudioFilename
-            if not anc_private:
-                anc_private = b"%sourcefile%_track%trackzn%.w64"
         anc = TAudioNameCallback(anc) if anc else cast(anc, TAudioNameCallback)
-        anc_private = cast(anc_private, c_void_p)
+        if isinstance(anc_private, str):
+            anc_private = anc_private.encode(FILENAME_ENCODING)
+        if (isinstance(anc_private, bytes) and
+                not anc_private.endswith(b".w64")):
+            anc_private += b".w64"
         ic = TIndexCallback(ic) if ic else cast(ic, TIndexCallback)
-        ic_private = cast(ic_private, c_void_p)
         index = FFMS_DoIndexing(self._indexer, index_mask, dump_mask,
-                                anc, anc_private, error_handling,
-                                ic, ic_private, byref(err_info))
+                                anc, cast(anc_private, c_void_p),
+                                error_handling,
+                                ic, cast(ic_private, c_void_p),
+                                byref(err_info))
         self._indexer = None
         if not index:
             raise Error
@@ -305,8 +336,9 @@ class Index:
 
     @classmethod
     def make(cls, source_file, index_mask=0, dump_mask=0,
-             anc=None, anc_private=None,
-             error_handling=FFMS_IEH_ABORT,
+             anc=FFMS_DefaultAudioFilename,
+             anc_private=DEFAULT_AUDIO_FILENAME_FORMAT,
+             error_handling=FFMS_IEH_STOP_TRACK,
              ic=None, ic_private=None):
         """Index a given source file.
         """
@@ -391,7 +423,7 @@ class Index:
             self._tracks = []
             for n in range(FFMS_GetNumTracks(self._index)):
                 track = Track.create(FFMS_GetTrackFromIndex(self._index, n),
-                                     n, self.source_file)
+                                     n, self)
                 self._tracks.append(track)
         return self._tracks
 
@@ -429,12 +461,11 @@ class Source:
             track_number if track_number is not None
             else index.get_first_indexed_track_of_type(self.type)
         )
-        self._index = index
-        self.source_file = source_file
+        self.index = index
         self._track = None
 
 
-class VideoSource(Source, VideoType):
+class VideoSource(VideoType, Source):
     """FFMS_VideoSource
     """
     try:
@@ -452,8 +483,8 @@ class VideoSource(Source, VideoType):
         self.num_threads = (num_threads if num_threads is not None
                             else self.MAX_THREADS)
         self._source = FFMS_CreateVideoSource(
-            get_encoded_path(self.source_file), self.track_number,
-            self._index._index, self.num_threads, seek_mode, byref(err_info))
+            get_encoded_path(self.index.source_file), self.track_number,
+            self.index._index, self.num_threads, seek_mode, byref(err_info))
         if not self._source:
             raise Error
         self.properties = FFMS_GetVideoProperties(self._source)[0]
@@ -503,10 +534,12 @@ class VideoSource(Source, VideoType):
             height = (frame.ScaledHeight
                       if frame.ScaledHeight > 0
                       else frame.EncodedHeight)
-        target_formats = cast((c_int * len(target_formats))(*target_formats),
-                              POINTER(c_int))
-        r = FFMS_SetOutputFormatV2(self._source, target_formats,
-                                   width, height, resizer, byref(err_info))
+        r = FFMS_SetOutputFormatV2(
+            self._source,
+            cast((c_int * len(target_formats))(*target_formats),
+                 POINTER(c_int)),
+            width, height, resizer, byref(err_info)
+        )
         if r:
             raise Error
 
@@ -553,7 +586,7 @@ class VideoSource(Source, VideoType):
         """
         if self._track is None:
             self._track = VideoTrack(FFMS_GetTrackFromVideo(self._source),
-                                     self.track_number, self.source_file)
+                                     self.track_number, self.index)
         return self._track
 
 
@@ -574,7 +607,7 @@ def _get_planes(frame):
 FFMS_Frame.planes = property(_get_planes)
 
 
-class AudioSource(Source, AudioType):
+class AudioSource(AudioType, Source):
     """FFMS_AudioSource
     """
     DEFAULT_RATE = 100
@@ -593,8 +626,8 @@ class AudioSource(Source, AudioType):
         self._FFMS_DestroyAudioSource = FFMS_DestroyAudioSource
         super().__init__(source_file, track_number, index)
         self._source = FFMS_CreateAudioSource(
-            get_encoded_path(self.source_file), self.track_number,
-            self._index._index, delay_mode, byref(err_info))
+            get_encoded_path(self.index.source_file), self.track_number,
+            self.index._index, delay_mode, byref(err_info))
         if not self._source:
             raise Error
         self.properties = FFMS_GetAudioProperties(self._source)[0]
@@ -632,7 +665,7 @@ class AudioSource(Source, AudioType):
         """
         if self._track is None:
             self._track = AudioTrack(FFMS_GetTrackFromAudio(self._source),
-                                     self.track_number, self.source_file)
+                                     self.track_number, self.index)
         return self._track
 
 
@@ -700,21 +733,21 @@ class AudioLinearAccess(Sized, Iterable):
 class Track:
     """FFMS_Track
     """
-    def __init__(self, track, number=None, source_file=None):
+    def __init__(self, track, number, index):
         self._track = track
         self.number = number
-        self.source_file = source_file
+        self.index = index
         self._frame_info_list = None
         self._timecodes = None
 
     @classmethod
-    def create(cls, track, number=None, source_file=None):
+    def create(cls, track, number, index):
         t = FFMS_GetTrackType(track)
         for c in cls.__subclasses__():
             if c.type == t:
                 cls = c
                 break
-        return cls(track, number, source_file)
+        return cls(track, number, index)
 
     @property
     def type(self): #@ReservedAssignment
@@ -751,20 +784,22 @@ class Track:
             ]
         return self._timecodes
 
-    def write_timecodes(self, timecode_file=None):
+    def write_timecodes(self, timecodes_file=None):
         """Write timecodes to disk.
         """
-        if not timecode_file:
-            timecode_file = self.source_file + FFINDEX_EXT
-            if self.number is not None:
-                timecode_file += "_track{:02}".format(self.number)
-            timecode_file += ".tc.txt"
-        if FFMS_WriteTimecodes(self._track, get_encoded_path(timecode_file),
+        if not timecodes_file:
+            timecodes_file = self._get_output_file("tc")
+        if FFMS_WriteTimecodes(self._track, get_encoded_path(timecodes_file),
                                byref(err_info)):
             raise Error
 
+    def _get_output_file(self, ext):
+        index_file = (self.index.index_file or
+                      self.index.source_file + FFINDEX_EXT)
+        return "{}_track{:02}.{}.txt".format(index_file, self.number, ext)
 
-class VideoTrack(Track, VideoType):
+
+class VideoTrack(VideoType, Track):
     """FFMS_Track of type FFMS_TYPE_VIDEO
     """
     @property
@@ -776,24 +811,21 @@ class VideoTrack(Track, VideoType):
 
     @property
     def keyframes_as_timecodes(self):
-        """List of keyframe positions as timecodes
+        """List of keyframes as timecodes
         """
         return [self.timecodes[n] for n in self.keyframes]
 
-    def write_keyframes(self, keyframe_file=None):
-        """Write keyframe positions to disk.
+    def write_keyframes(self, keyframes_file=None):
+        """Write keyframe numbers to disk.
         """
-        if not keyframe_file:
-            keyframe_file = self.source_file + FFINDEX_EXT
-            if self.number is not None:
-                keyframe_file += "_track{:02}".format(self.number)
-            keyframe_file += ".kf.txt"
-        with open(keyframe_file, "w") as f:
+        if not keyframes_file:
+            keyframes_file = self._get_output_file("kf")
+        with open(keyframes_file, "w") as f:
             for n in self.keyframes:
                 print(n, file=f)
 
 
-class AudioTrack(Track, AudioType):
+class AudioTrack(AudioType, Track):
     """FFMS_Track of type FFMS_TYPE_AUDIO
     """
 

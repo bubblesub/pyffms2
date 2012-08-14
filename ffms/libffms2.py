@@ -15,7 +15,7 @@ lib = get_library(
 
 STRING = c_char_p
 
-FFMS_VERSION = ((2 << 24) | (17 << 16) | (2 << 8) | 0)
+FFMS_VERSION = ((2 << 24) | (17 << 16) | (2 << 8) | 1)
 
 
 class FFMS_ErrorInfo(Structure):
@@ -170,8 +170,8 @@ FFMS_AudioProperties._fields_ = [
 ]
 TIndexCallback = CFUNCTYPE(c_int, int64_t, int64_t, c_void_p)
 TAudioNameCallback = CFUNCTYPE(
-    c_int, STRING, c_int, POINTER(FFMS_AudioProperties), STRING, c_int,
-    c_void_p
+    c_int, STRING, c_int, POINTER(FFMS_AudioProperties),
+    POINTER(c_char), c_int, c_void_p
 )
 
 FFMS_Init = lib.FFMS_Init
