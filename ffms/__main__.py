@@ -48,7 +48,7 @@ def parse_args():
                         help="audio decoding error handling")
     parser.add_argument("-m", "--demuxer", metavar="NAME",
                         default="default",
-                        help="Use the specified demuxer ({})"
+                        help="use the specified demuxer ({})"
                              .format(", ".join(ffms.DEMUXERS)))
     return parser.parse_args()
 
