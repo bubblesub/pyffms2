@@ -2,7 +2,6 @@
 """
 
 import argparse
-import ctypes
 import os
 import sys
 
@@ -52,6 +51,7 @@ def parse_args():
     return parser.parse_args()
 
 
+# For Python 2
 def get_filename(filename):
     if not isinstance(filename, str):
         filename = filename.decode(sys.stdin.encoding)
@@ -64,26 +64,29 @@ def iter_video_tracks(index):
 
 
 def get_progress_callback():
-    # Python 2 doesn’t support nonlocal.
-    last_pct = ctypes.c_int(-1)
-
-    def ic(current, total, private=None):
+    def ic(current=0, total=1, private=None):
         pct = current * 100 // total
-        if pct > last_pct.value:
+        if pct > ic.pct:
             sys.stdout.write("\rIndexing... {:d}%".format(pct))
             sys.stdout.flush()
-            last_pct.value = pct
+            ic.pct = pct
         return 0
 
+    ic.pct = -1
     return ic
 
 
 def main():
     args = parse_args()
-    stdout_write_if_progress = (sys.stdout.write if args.progress
-                                else lambda s: None)
     output_file = args.output_file or args.input_file + ffms.FFINDEX_EXT
     ffms.set_log_level(ffms.AV_LOGS[args.verbose])
+
+    if args.progress:
+        stdout_write = sys.stdout.write
+        ic = get_progress_callback()
+    else:
+        stdout_write = lambda s: None
+        ic = None
 
     try:
         if os.path.isfile(output_file) and not args.force:
@@ -92,7 +95,6 @@ def main():
         else:
             indexer = ffms.Indexer(args.input_file,
                                    ffms.DEMUXERS[args.demuxer])
-            ic = get_progress_callback() if args.progress else None
             anc_private = args.audio_filename
             index = indexer.do_indexing(
                 args.indexing_mask, args.decoding_mask,
@@ -100,17 +102,18 @@ def main():
                 error_handling=args.error_handling,
                 ic=ic
             )
-            stdout_write_if_progress("\rIndexing... 100%\n")
-            stdout_write_if_progress("Writing index...\n")
+            if ic and ic.pct < 100:
+                ic(1)
+            stdout_write("\nWriting index...\n")
             index.write(output_file)
 
         if args.timecodes:
-            stdout_write_if_progress("Writing timecodes...\n")
+            stdout_write("Writing timecodes...\n")
             for track in iter_video_tracks(index):
                 track.write_timecodes()
 
         if args.keyframes:
-            stdout_write_if_progress("Writing keyframes...\n")
+            stdout_write("Writing keyframes...\n")
             for track in iter_video_tracks(index):
                 track.write_keyframes()
 
