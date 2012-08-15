@@ -821,8 +821,7 @@ class VideoTrack(VideoType, Track):
         if not keyframes_file:
             keyframes_file = self._get_output_file("kf")
         with open(keyframes_file, "w") as f:
-            for n in self.keyframes:
-                print(n, file=f)
+            f.writelines(["{:d}\n".format(n) for n in self.keyframes])
 
 
 class AudioTrack(AudioType, Track):
