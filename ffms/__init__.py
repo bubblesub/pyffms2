@@ -241,6 +241,8 @@ class Error(Exception):
 class Indexer:
     """FFMS_Indexer
     """
+    _AUDIO_DUMP_EXT = ".w64"
+
     def __init__(self, source_file, demuxer=FFMS_SOURCE_DEFAULT):
         """Create an indexer object for the given source file.
         """
@@ -302,12 +304,11 @@ class Indexer:
             index_mask = list_to_mask(index_mask)
         if isinstance(dump_mask, Iterable):
             dump_mask = list_to_mask(dump_mask)
-        anc = TAudioNameCallback(anc) if anc else cast(anc, TAudioNameCallback)
-        if isinstance(anc_private, str):
+        if anc is FFMS_DefaultAudioFilename and isinstance(anc_private, str):
+            if not anc_private.lower().endswith(self._AUDIO_DUMP_EXT):
+                anc_private += self._AUDIO_DUMP_EXT
             anc_private = anc_private.encode(FILENAME_ENCODING)
-        if (isinstance(anc_private, bytes) and
-                not anc_private.endswith(b".w64")):
-            anc_private += b".w64"
+        anc = TAudioNameCallback(anc) if anc else cast(anc, TAudioNameCallback)
         ic = TIndexCallback(ic) if ic else cast(ic, TIndexCallback)
         index = FFMS_DoIndexing(self._indexer, index_mask, dump_mask,
                                 anc, cast(anc_private, c_void_p),
@@ -470,9 +471,9 @@ class VideoSource(VideoType, Source):
     """
     try:
         from multiprocessing import cpu_count
-        MAX_THREADS = min(cpu_count(), 8)
+        _MAX_THREADS = min(cpu_count(), 8)
     except (ImportError, NotImplementedError):
-        MAX_THREADS = 1
+        _MAX_THREADS = 1
 
     def __init__(self, source_file, track_number=None, index=None,
                  num_threads=None, seek_mode=FFMS_SEEK_NORMAL):
@@ -481,7 +482,7 @@ class VideoSource(VideoType, Source):
         self._FFMS_DestroyVideoSource = FFMS_DestroyVideoSource
         super().__init__(source_file, track_number, index)
         self.num_threads = (num_threads if num_threads is not None
-                            else self.MAX_THREADS)
+                            else self._MAX_THREADS)
         self._source = FFMS_CreateVideoSource(
             get_encoded_path(self.index.source_file), self.track_number,
             self.index._index, self.num_threads, seek_mode, byref(err_info))
@@ -610,7 +611,7 @@ FFMS_Frame.planes = property(_get_planes)
 class AudioSource(AudioType, Source):
     """FFMS_AudioSource
     """
-    DEFAULT_RATE = 100
+    _DEFAULT_RATE = 100
     _SAMPLE_TYPES = [
         numpy.uint8,
         numpy.int16,
@@ -654,7 +655,7 @@ class AudioSource(AudioType, Source):
             raise Error
         return self.audio
 
-    def linear_access(self, start=0, end=None, rate=DEFAULT_RATE):
+    def linear_access(self, start=0, end=None, rate=_DEFAULT_RATE):
         """Return a linear iterator over the audio samples.
         """
         return AudioLinearAccess(self, start, end, rate)
@@ -673,7 +674,7 @@ class AudioLinearAccess(Sized, Iterable):
     """Linear access to audio
     """
     def __init__(self, parent, start_frame=0, end_frame=None,
-                 rate=AudioSource.DEFAULT_RATE):
+                 rate=AudioSource._DEFAULT_RATE):
         self.parent = parent
         self.num_samples = parent.properties.NumSamples
         self.start_frame = (self.num_samples + start_frame
