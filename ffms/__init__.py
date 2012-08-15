@@ -815,13 +815,24 @@ class VideoTrack(VideoType, Track):
         """
         return [self.timecodes[n] for n in self.keyframes]
 
-    def write_keyframes(self, keyframes_file=None):
+    def write_keyframes(self, keyframes_file=None, version=1):
         """Write keyframe numbers to disk.
         """
         if not keyframes_file:
             keyframes_file = self._get_output_file("kf")
-        with open(keyframes_file, "w") as f:
-            f.writelines(["{:d}\n".format(n) for n in self.keyframes])
+        if version == 1:
+            # Though keyframe format v1 requires a FPS line,
+            # we can’t rely on it to properly calculate timecodes.
+            vsource = VideoSource(self.index.source_file, self.number,
+                                  self.index)
+            vprops = vsource.properties
+            fps = vprops.FPSNumerator / vprops.FPSDenominator
+            with open(keyframes_file, "w") as f:
+                f.write("# keyframe format v{}\n".format(version))
+                f.write("fps {:f}\n".format(fps))
+                f.writelines(["{:d}\n".format(n) for n in self.keyframes])
+        else:
+            raise ValueError("unsupported version: {}".format(version))
 
 
 class AudioTrack(AudioType, Track):
