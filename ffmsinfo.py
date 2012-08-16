@@ -28,6 +28,17 @@ def parse_args():
     return parser.parse_args()
 
 
+def create_index(indexer):
+    print("Indexing…")
+    index = indexer.do_indexing(-1)
+    if KEEP_INDEX_FILES:
+        try:
+            index.write()
+        except ffms.Error as e:
+            print(e, file=sys.stderr)
+    return index
+
+
 def main():
     args = parse_args()
     source_files = args.source_files
@@ -50,14 +61,14 @@ def main():
 
         try:
             index = ffms.Index.read(source_file=source_file)
+            # Recreate the index if there are any unindexed audio tracks.
+            for track in index.tracks:
+                if (track.type == ffms.FFMS_TYPE_AUDIO and
+                        not track.frame_info_list):
+                    index = create_index(indexer)
+                    break
         except ffms.Error as e:
-            print("Creating index file…")
-            index = indexer.do_indexing(-1)
-            if KEEP_INDEX_FILES:
-                try:
-                    index.write()
-                except ffms.Error as e:
-                    print(e, file=sys.stderr)
+            index = create_index(indexer)
 
         for n, (type_, codec_name) in enumerate(track_info_list):
             if type_ == ffms.FFMS_TYPE_VIDEO:
