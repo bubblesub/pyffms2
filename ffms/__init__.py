@@ -108,6 +108,7 @@ DEFAULT_AUDIO_FILENAME_FORMAT = "%sourcefile%_track%trackzn%.w64"
 
 
 if os.name == "nt":
+    import atexit
     import pythoncom #@UnresolvedImport
 
     # http://code.google.com/p/ffmpegsource/issues/detail?id=58
@@ -131,7 +132,6 @@ if os.name == "nt":
 
     def ffms_init():
         if not getattr(pythoncom, "_initialized", False):
-            import atexit
             try:
                 pythoncom.CoInitializeEx(pythoncom.COINIT_MULTITHREADED)
             except pythoncom.error:
