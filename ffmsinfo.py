@@ -6,6 +6,7 @@ import sys
 import argparse
 
 import ffms
+import ffms.console_mode
 
 
 KEEP_INDEX_FILES = True
@@ -50,7 +51,7 @@ def main():
         try:
             index = ffms.Index.read(source_file=source_file)
         except ffms.Error as e:
-            print("Creating index file...")
+            print("Creating index file…")
             index = indexer.do_indexing(-1)
             if KEEP_INDEX_FILES:
                 try:

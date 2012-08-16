@@ -6,6 +6,7 @@ import os
 import sys
 
 import ffms
+import ffms.console_mode
 
 
 def parse_args():
@@ -67,7 +68,7 @@ def get_progress_callback():
     def ic(current=0, total=1, private=None):
         pct = current * 100 // total
         if pct > ic.pct:
-            sys.stdout.write("\rIndexing... {:d}%".format(pct))
+            sys.stdout.write("\rIndexing… {:d}%".format(pct))
             sys.stdout.flush()
             ic.pct = pct
         return 0
@@ -104,16 +105,16 @@ def main():
             )
             if ic and ic.pct < 100:
                 ic(1)
-            stdout_write("\nWriting index...\n")
+            stdout_write("\nWriting index…\n")
             index.write(output_file)
 
         if args.timecodes:
-            stdout_write("Writing timecodes...\n")
+            stdout_write("Writing timecodes…\n")
             for track in iter_video_tracks(index):
                 track.write_timecodes()
 
         if args.keyframes:
-            stdout_write("Writing keyframes...\n")
+            stdout_write("Writing keyframes…\n")
             for track in iter_video_tracks(index):
                 track.write_keyframes()
 
