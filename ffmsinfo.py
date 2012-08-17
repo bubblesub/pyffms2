@@ -8,6 +8,8 @@ import argparse
 import ffms
 import ffms.console_mode
 
+from ffms.__main__ import get_progress_callback
+
 
 KEEP_INDEX_FILES = True
 
@@ -25,12 +27,17 @@ def parse_args():
     parser.add_argument("source_files", type=str, nargs="+")
     parser.add_argument("-v", "--version", action="version",
                         version="FFMS version = {}".format(ffms.get_version()))
+    parser.add_argument("-p", "--disable-progress", dest="progress",
+                        action="store_false",
+                        help="disable indexing progress reporting")
     return parser.parse_args()
 
 
-def create_index(indexer):
-    print("Indexing…")
-    index = indexer.do_indexing(-1)
+def create_index(indexer, progress=True):
+    ic = get_progress_callback() if progress else None
+    index = indexer.do_indexing(-1, ic=ic)
+    if ic:
+        ic.done()
     if KEEP_INDEX_FILES:
         try:
             index.write()
@@ -61,14 +68,15 @@ def main():
 
         try:
             index = ffms.Index.read(source_file=source_file)
+        except ffms.Error as e:
+            index = create_index(indexer, args.progress)
+        else:
             # Recreate the index if there are any unindexed audio tracks.
             for track in index.tracks:
                 if (track.type == ffms.FFMS_TYPE_AUDIO and
                         not track.frame_info_list):
-                    index = create_index(indexer)
+                    index = create_index(indexer, args.progress)
                     break
-        except ffms.Error as e:
-            index = create_index(indexer)
 
         for n, (type_, codec_name) in enumerate(track_info_list):
             if type_ == ffms.FFMS_TYPE_VIDEO:

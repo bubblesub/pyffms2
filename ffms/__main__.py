@@ -65,7 +65,7 @@ def iter_video_tracks(index):
 
 
 def get_progress_callback():
-    def ic(current=0, total=1, private=None):
+    def ic(current, total, private=None):
         pct = current * 100 // total
         if pct > ic.pct:
             sys.stdout.write("\rIndexing… {:d}%".format(pct))
@@ -73,7 +73,12 @@ def get_progress_callback():
             ic.pct = pct
         return 0
 
+    def done():
+        ic(1, 1)
+        print()
+
     ic.pct = -1
+    ic.done = done
     return ic
 
 
@@ -103,9 +108,9 @@ def main():
                 error_handling=args.error_handling,
                 ic=ic
             )
-            if ic and ic.pct < 100:
-                ic(1)
-            stdout_write("\nWriting index…\n")
+            if ic:
+                ic.done()
+            stdout_write("Writing index…\n")
             index.write(output_file)
 
         if args.timecodes:
