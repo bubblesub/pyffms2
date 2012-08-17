@@ -48,6 +48,9 @@ def parse_args():
                         default="default",
                         help="use the specified demuxer ({})"
                              .format(", ".join(ffms.DEMUXERS)))
+    parser.add_argument("--version", action="version",
+                        version="FFMS {}".format(ffms.get_version()),
+                        help="show FFMS version number")
     return parser.parse_args()
 
 

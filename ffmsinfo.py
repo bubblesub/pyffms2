@@ -22,11 +22,12 @@ AUDIO_FORMATS = {
 def parse_args():
     parser = argparse.ArgumentParser("ffmsinfo")
     parser.add_argument("source_files", type=str, nargs="+")
-    parser.add_argument("-v", "--version", action="version",
-                        version="FFMS version = {}".format(ffms.get_version()))
     parser.add_argument("-p", "--disable-progress", dest="progress",
                         action="store_false",
                         help="disable indexing progress reporting")
+    parser.add_argument("--version", action="version",
+                        version="FFMS {}".format(ffms.get_version()),
+                        help="show FFMS version number")
     return parser.parse_args()
 
 
