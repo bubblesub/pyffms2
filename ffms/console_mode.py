@@ -4,8 +4,8 @@
 import sys
 
 
-if (sys.stdout and sys.stdout.errors == "strict" and sys.stdout.encoding and
-        not sys.stdout.encoding.lower().startswith("utf")):
+if (getattr(sys.stdout, "errors", "") == "strict" and
+        not getattr(sys.stdout, "encoding", "").lower().startswith("utf")):
     try:
         import translit
         sys.stdout = translit.StreamFilter(sys.stdout)

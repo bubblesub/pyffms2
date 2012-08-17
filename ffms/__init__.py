@@ -21,6 +21,7 @@ import functools
 import math
 import os
 import sys
+import time
 
 from collections import namedtuple, OrderedDict
 try:
@@ -847,3 +848,32 @@ def list_to_mask(l):
 
 def mask_to_list(m, num_bits=64):
     return [n for n in range(num_bits) if m & 1 << n]
+
+
+def init_progress_callback(msg="Indexing…", time_threshold=1):
+    """Initialize and return a progress callback for the text terminal.
+    """
+    def ic(current, total, private=None):
+        pct = current * 100 // total
+        if ic.show_pct:
+            if pct > ic.pct:
+                ic.pct = pct
+                sys.stdout.write("\r{} {:d}%".format(msg, pct))
+                sys.stdout.flush()
+        elif time.time() - start_time >= check_time and pct < pct_threshold:
+            ic.show_pct = True
+        return 0
+
+    def done():
+        ic(1, 1)
+        print()
+
+    sys.stdout.write(msg)
+    sys.stdout.flush()
+    ic.done = done
+    ic.pct = -1
+    ic.show_pct = False
+    check_time = .2
+    pct_threshold = int(check_time * 100 / time_threshold)
+    start_time = time.time()
+    return ic

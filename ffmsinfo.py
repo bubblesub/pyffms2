@@ -5,10 +5,7 @@
 import sys
 import argparse
 
-import ffms
-import ffms.console_mode
-
-from ffms.__main__ import get_progress_callback
+import ffms.console_mode #@UnusedImport
 
 
 KEEP_INDEX_FILES = True
@@ -34,7 +31,7 @@ def parse_args():
 
 
 def create_index(indexer, progress=True):
-    ic = get_progress_callback() if progress else None
+    ic = ffms.init_progress_callback() if progress else None
     index = indexer.do_indexing(-1, ic=ic)
     if ic:
         ic.done()

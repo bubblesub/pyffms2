@@ -5,8 +5,7 @@ import argparse
 import os
 import sys
 
-import ffms
-import ffms.console_mode
+import ffms.console_mode #@UnusedImport
 
 
 def parse_args():
@@ -59,29 +58,6 @@ def get_filename(filename):
     return filename
 
 
-def iter_video_tracks(index):
-    return (track for track in index.tracks
-            if track.type == ffms.FFMS_TYPE_VIDEO)
-
-
-def get_progress_callback():
-    def ic(current, total, private=None):
-        pct = current * 100 // total
-        if pct > ic.pct:
-            sys.stdout.write("\rIndexing… {:d}%".format(pct))
-            sys.stdout.flush()
-            ic.pct = pct
-        return 0
-
-    def done():
-        ic(1, 1)
-        print()
-
-    ic.pct = -1
-    ic.done = done
-    return ic
-
-
 def main():
     args = parse_args()
     output_file = args.output_file or args.input_file + ffms.FFINDEX_EXT
@@ -89,7 +65,7 @@ def main():
 
     if args.progress:
         stdout_write = sys.stdout.write
-        ic = get_progress_callback()
+        ic = ffms.init_progress_callback()
     else:
         stdout_write = lambda s: None
         ic = None
@@ -115,13 +91,15 @@ def main():
 
         if args.timecodes:
             stdout_write("Writing timecodes…\n")
-            for track in iter_video_tracks(index):
-                track.write_timecodes()
+            for track in index.tracks:
+                if track.type == ffms.FFMS_TYPE_VIDEO:
+                    track.write_timecodes()
 
         if args.keyframes:
             stdout_write("Writing keyframes…\n")
-            for track in iter_video_tracks(index):
-                track.write_keyframes()
+            for track in index.tracks:
+                if track.type == ffms.FFMS_TYPE_VIDEO:
+                    track.write_keyframes()
 
     except ffms.Error as e:
         print("Error:", e, file=sys.stderr)
