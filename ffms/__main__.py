@@ -62,22 +62,17 @@ def main():
     args = parse_args()
     output_file = args.output_file or args.input_file + ffms.FFINDEX_EXT
     ffms.set_log_level(ffms.AV_LOGS[args.verbose])
-
-    if args.progress:
-        stdout_write = sys.stdout.write
-        ic = ffms.init_progress_callback()
-    else:
-        stdout_write = lambda s: None
-        ic = None
+    stdout_write = sys.stdout.write if args.progress else lambda s: None
 
     try:
         if os.path.isfile(output_file) and not args.force:
             print("Index file already exists:", output_file)
-            index = ffms.Index.read(output_file)
+            index = ffms.Index.read(output_file, args.input_file)
         else:
             indexer = ffms.Indexer(args.input_file,
                                    ffms.DEMUXERS[args.demuxer])
             anc_private = args.audio_filename
+            ic = ffms.init_progress_callback() if args.progress else None
             index = indexer.do_indexing(
                 args.indexing_mask, args.decoding_mask,
                 anc_private=anc_private,

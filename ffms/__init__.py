@@ -823,15 +823,19 @@ class VideoTrack(VideoType, Track):
         if not keyframes_file:
             keyframes_file = self._get_output_file("kf")
         if version == 1:
-            # Though keyframe format v1 requires a FPS line,
-            # we can’t rely on it to properly calculate timecodes.
-            vsource = VideoSource(self.index.source_file, self.number,
-                                  self.index)
-            vprops = vsource.properties
-            fps = vprops.FPSNumerator / vprops.FPSDenominator
             with open(keyframes_file, "w") as f:
                 f.write("# keyframe format v{}\n".format(version))
-                f.write("fps {:f}\n".format(fps))
+                # Though keyframe format v1 requires a FPS line,
+                # we can’t rely on it to properly calculate timecodes.
+                if self.index.source_file:
+                    vsource = VideoSource(self.index.source_file, self.number,
+                                          self.index)
+                    vprops = vsource.properties
+                    fps = "{:f}".format(
+                        vprops.FPSNumerator / vprops.FPSDenominator)
+                else:
+                    fps = 0
+                f.write("fps {}\n".format(fps))
                 f.writelines(["{:d}\n".format(n) for n in self.keyframes])
         else:
             raise ValueError("unsupported version: {}".format(version))
