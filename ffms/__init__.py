@@ -39,8 +39,7 @@ from .av_log import *
 
 
 __all__ = [
-    "get_version", "get_version_info", "get_pix_fmt",
-    "get_present_sources", "get_enabled_sources",
+    "get_version", "get_pix_fmt", "get_present_sources", "get_enabled_sources",
     "get_log_level", "set_log_level", "Error", "Indexer", "Index",
     "VideoSource", "AudioSource",
     "FFINDEX_EXT", "DEMUXERS", "AV_LOGS", "DEFAULT_AUDIO_FILENAME_FORMAT",
@@ -825,17 +824,16 @@ class VideoTrack(VideoType, Track):
         if version == 1:
             with open(keyframes_file, "w") as f:
                 f.write("# keyframe format v{}\n".format(version))
-                # Though keyframe format v1 requires a FPS line,
+                # Though keyframe format v1 requires an FPS line,
                 # we can’t rely on it to properly calculate timecodes.
                 if self.index.source_file:
                     vsource = VideoSource(self.index.source_file, self.number,
                                           self.index)
                     vprops = vsource.properties
-                    fps = "{:f}".format(
-                        vprops.FPSNumerator / vprops.FPSDenominator)
+                    fps = vprops.FPSNumerator / vprops.FPSDenominator
                 else:
                     fps = 0
-                f.write("fps {}\n".format(fps))
+                f.write("fps {:f}\n".format(fps))
                 f.writelines(["{:d}\n".format(n) for n in self.keyframes])
         else:
             raise ValueError("unsupported version: {}".format(version))
@@ -854,7 +852,7 @@ def mask_to_list(m, num_bits=64):
     return [n for n in range(num_bits) if m & 1 << n]
 
 
-def init_progress_callback(msg="Indexing…", time_threshold=1):
+def init_progress_callback(msg="Indexing…", time_threshold=1, check_time=0.2):
     """Initialize and return a progress callback for the text terminal.
     """
     def ic(current, total, private=None):
@@ -877,7 +875,6 @@ def init_progress_callback(msg="Indexing…", time_threshold=1):
     ic.done = done
     ic.pct = -1
     ic.show_pct = False
-    check_time = .2
     pct_threshold = int(check_time * 100 / time_threshold)
     start_time = time.time()
     return ic
