@@ -5,7 +5,29 @@ import argparse
 import os
 import sys
 
+from collections import OrderedDict
+
 import ffms.console_mode #@UnusedImport
+
+
+DEMUXERS = OrderedDict([
+    ("default", ffms.FFMS_SOURCE_DEFAULT),
+    ("lavf", ffms.FFMS_SOURCE_LAVF),
+    ("matroska", ffms.FFMS_SOURCE_MATROSKA),
+    ("haalimpeg", ffms.FFMS_SOURCE_HAALIMPEG),
+    ("haaliogg", ffms.FFMS_SOURCE_HAALIOGG),
+])
+
+AV_LOGS = [
+    ffms.AV_LOG_QUIET,
+    ffms.AV_LOG_PANIC,
+    ffms.AV_LOG_FATAL,
+    ffms.AV_LOG_ERROR,
+    ffms.AV_LOG_WARNING,
+    ffms.AV_LOG_INFO,
+    ffms.AV_LOG_VERBOSE,
+    ffms.AV_LOG_DEBUG,
+]
 
 
 def parse_args():
@@ -47,7 +69,7 @@ def parse_args():
     parser.add_argument("-m", "--demuxer", metavar="NAME",
                         default="default",
                         help="use the specified demuxer ({})"
-                             .format(", ".join(ffms.DEMUXERS)))
+                             .format(", ".join(DEMUXERS)))
     parser.add_argument("--version", action="version",
                         version="FFMS {}".format(ffms.get_version()),
                         help="show FFMS version number")
@@ -64,7 +86,7 @@ def get_filename(filename):
 def main():
     args = parse_args()
     output_file = args.output_file or args.input_file + ffms.FFINDEX_EXT
-    ffms.set_log_level(ffms.AV_LOGS[args.verbose])
+    ffms.set_log_level(AV_LOGS[args.verbose])
     stdout_write = sys.stdout.write if args.progress else lambda s: None
 
     try:
@@ -72,8 +94,7 @@ def main():
             print("Index file already exists:", output_file)
             index = ffms.Index.read(output_file, args.input_file)
         else:
-            indexer = ffms.Indexer(args.input_file,
-                                   ffms.DEMUXERS[args.demuxer])
+            indexer = ffms.Indexer(args.input_file, DEMUXERS[args.demuxer])
             anc_private = args.audio_filename
             ic = ffms.init_progress_callback() if args.progress else None
             index = indexer.do_indexing(

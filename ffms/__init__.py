@@ -23,11 +23,13 @@ import os
 import sys
 import time
 
-from collections import namedtuple, OrderedDict
+from collections import namedtuple
+
 try:
     from collections.abc import Iterable, Sized
 except ImportError:
     from collections import Iterable, Sized
+
 from ctypes import *
 
 # TODO: Use stdlib if numpy is not available.
@@ -42,7 +44,7 @@ __all__ = [
     "get_version", "get_pix_fmt", "get_present_sources", "get_enabled_sources",
     "get_log_level", "set_log_level", "Error", "Indexer", "Index",
     "VideoSource", "AudioSource",
-    "FFINDEX_EXT", "DEMUXERS", "AV_LOGS", "DEFAULT_AUDIO_FILENAME_FORMAT",
+    "FFINDEX_EXT", "DEFAULT_AUDIO_FILENAME_FORMAT",
 
     "FFMS_CH_BACK_CENTER", "FFMS_CH_BACK_LEFT", "FFMS_CH_BACK_RIGHT",
     "FFMS_CH_FRONT_CENTER", "FFMS_CH_FRONT_LEFT",
@@ -84,26 +86,6 @@ __all__ = [
 ]
 
 FFINDEX_EXT = ".ffindex"
-
-DEMUXERS = OrderedDict([
-    ("default", FFMS_SOURCE_DEFAULT),
-    ("lavf", FFMS_SOURCE_LAVF),
-    ("matroska", FFMS_SOURCE_MATROSKA),
-    ("haalimpeg", FFMS_SOURCE_HAALIMPEG),
-    ("haaliogg", FFMS_SOURCE_HAALIOGG),
-])
-
-AV_LOGS = [
-    AV_LOG_QUIET,
-    AV_LOG_PANIC,
-    AV_LOG_FATAL,
-    AV_LOG_ERROR,
-    AV_LOG_WARNING,
-    AV_LOG_INFO,
-    AV_LOG_VERBOSE,
-    AV_LOG_DEBUG,
-]
-
 DEFAULT_AUDIO_FILENAME_FORMAT = "%sourcefile%_track%trackzn%.w64"
 
 
@@ -361,7 +343,7 @@ class Index:
         if not os.path.isfile(index_file):
             raise Error("no index file {!r}".format(index_file),
                         FFMS_ERROR_PARSER, FFMS_ERROR_FILE_READ)
-        elif os.path.getsize(index_file) < 94:
+        elif os.path.getsize(index_file) < 76:
             raise Error("bad index file {!r}".format(index_file),
                         FFMS_ERROR_PARSER, FFMS_ERROR_FILE_READ)
         index = FFMS_ReadIndex(get_encoded_path(index_file), byref(err_info))
