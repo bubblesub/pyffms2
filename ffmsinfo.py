@@ -8,15 +8,21 @@ import argparse
 import ffms.console_mode #@UnusedImport
 
 
-KEEP_INDEX_FILES = True
+AUDIO_FORMATS = [
+    "8-bit",
+    "16-bit",
+    "32-bit",
+    "float",
+    "double",
+]
 
-AUDIO_FORMATS = {
-    ffms.FFMS_FMT_U8: "8-bit",
-    ffms.FFMS_FMT_S16: "16-bit",
-    ffms.FFMS_FMT_S32: "32-bit",
-    ffms.FFMS_FMT_FLT: "float",
-    ffms.FFMS_FMT_DBL: "double",
-}
+TYPES = [
+    "video",
+    "audio",
+    "data",
+    "subtitles",
+    "attachment",
+]
 
 
 def parse_args():
@@ -25,18 +31,21 @@ def parse_args():
     parser.add_argument("-p", "--disable-progress", dest="progress",
                         action="store_false",
                         help="disable indexing progress reporting")
+    parser.add_argument("-w", "--disable-write-index", dest="write_index",
+                        action="store_false",
+                        help="disable writing index to disk")
     parser.add_argument("--version", action="version",
                         version="FFMS {}".format(ffms.get_version()),
                         help="show FFMS version number")
     return parser.parse_args()
 
 
-def create_index(indexer, progress=True):
-    ic = ffms.init_progress_callback() if progress else None
+def create_index(indexer, write_index=True, progress=True, msg="Indexing…"):
+    ic = ffms.init_progress_callback(msg) if progress else None
     index = indexer.do_indexing(-1, ic=ic)
     if ic:
         ic.done()
-    if KEEP_INDEX_FILES:
+    if write_index:
         try:
             index.write()
         except ffms.Error as e:
@@ -59,24 +68,33 @@ def main():
             continue
 
         format_name = indexer.format_name
-        source_type = indexer.source_type
+        #source_type = indexer.source_type
         track_info_list = indexer.track_info_list
 
-        print("format = {} ({})".format(format_name, source_type))
+        print("format =", format_name)
 
         try:
             index = ffms.Index.read(source_file=source_file)
         except ffms.Error as e:
-            index = create_index(indexer, args.progress)
+            index = create_index(indexer, args.write_index, args.progress)
         else:
             # Recreate the index if there are any unindexed audio tracks.
             for track in index.tracks:
                 if (track.type == ffms.FFMS_TYPE_AUDIO and
                         not track.frame_info_list):
-                    index = create_index(indexer, args.progress)
+                    index = create_index(indexer, args.write_index,
+                                         args.progress, "Reindexing…")
                     break
 
         for n, (type_, codec_name) in enumerate(track_info_list):
+            type_name = TYPES[type_] if 0 <= type_ < len(TYPES) else "unknown"
+            #track = index.tracks[n]
+            #time_base = track.time_base
+            print("{}:".format(n))
+            print("\ttype =", type_name)
+            print("\tcodec =", codec_name)
+            #print("\ttime base =",
+                  #"{}∕{}".format(time_base.Num, time_base.Den))
             if type_ == ffms.FFMS_TYPE_VIDEO:
                 vsource = ffms.VideoSource(source_file, n, index)
                 vprops = vsource.properties
@@ -86,37 +104,26 @@ def main():
                                     else (1, 1))
                 aspect_ratio = (frame.EncodedWidth * sar_num /
                                 sar_den / frame.EncodedHeight)
-                print("{}: video track:".format(n))
-                print("\tcodec =", codec_name)
                 print("\tresolution =", "{}×{}".format(
                     frame.EncodedWidth, frame.EncodedHeight))
                 print("\taspect ratio =", aspect_ratio)
                 print("\tfps =", vprops.FPSNumerator / vprops.FPSDenominator)
                 print("\tnum frames =", vprops.NumFrames)
-                print("\tduration (s) =", vprops.LastTime - vprops.FirstTime)
+                print("\tduration =", vprops.LastTime - vprops.FirstTime)
             elif type_ == ffms.FFMS_TYPE_AUDIO:
                 asource = ffms.AudioSource(source_file, n, index)
                 aprops = asource.properties
-                sample_format_name = AUDIO_FORMATS.get(
-                    aprops.SampleFormat, "unknown")
-                print("{}: audio track: ".format(n))
-                print("\tcodec =", codec_name)
+                sample_format_name = (
+                    AUDIO_FORMATS[aprops.SampleFormat]
+                    if 0 <= aprops.SampleFormat < len(AUDIO_FORMATS)
+                    else "unknown"
+                )
                 print("\tsample rate =", aprops.SampleRate),
                 #print("\tbits per sample =", aprops.BitsPerSample)
                 print("\tsample format =", sample_format_name)
                 print("\tnum channels =", aprops.Channels)
                 print("\tnum samples =", aprops.NumSamples)
-                print("\tduration (s) =", aprops.LastTime - aprops.FirstTime)
-            else:
-                if type_ == ffms.FFMS_TYPE_DATA:
-                    print("{}: data track: ".format(n))
-                elif type_ == ffms.FFMS_TYPE_SUBTITLE:
-                    print("{}: subtitle track: ".format(n))
-                elif type_ == ffms.FFMS_TYPE_ATTACHMENT:
-                    print("{}: attachment track: ".format(n))
-                else:
-                    print("{}: unknown track: ".format(n))
-                print("\tcodec =", codec_name)
+                print("\tduration =", aprops.LastTime - aprops.FirstTime)
 
         print()
 
