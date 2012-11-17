@@ -87,6 +87,7 @@ __all__ = [
 
 FFINDEX_EXT = ".ffindex"
 DEFAULT_AUDIO_FILENAME_FORMAT = "%sourcefile%_track%trackzn%.w64"
+PIX_FMT_NONE = FFMS_GetPixFmt(b"none")
 
 
 if os.name == "nt":
@@ -541,7 +542,8 @@ class VideoSource(VideoType, Source):
         self.reset_output_format()
 
     def set_input_format(self, color_space=FFMS_CS_UNSPECIFIED,
-                         color_range=FFMS_CR_UNSPECIFIED, pixel_format=-1):
+                         color_range=FFMS_CR_UNSPECIFIED,
+                         pixel_format=PIX_FMT_NONE):
         """Override the source format for video frames.
         """
         r = FFMS_SetInputFormatV(self._source, color_space, color_range,
