@@ -30,6 +30,11 @@ try:
 except ImportError:
     from collections import Iterable, Sized
 
+try:
+    from multiprocessing import cpu_count
+except (ImportError, NotImplementedError):
+    cpu_count = None
+
 from ctypes import *
 
 # TODO: Use stdlib if numpy is not available.
@@ -452,11 +457,7 @@ class Source:
 class VideoSource(VideoType, Source):
     """FFMS_VideoSource
     """
-    try:
-        from multiprocessing import cpu_count
-        _MAX_THREADS = min(cpu_count(), 8)
-    except (ImportError, NotImplementedError):
-        _MAX_THREADS = 1
+    _MAX_THREADS = min(cpu_count(), 8) if cpu_count is not None else 1
 
     def __init__(self, source_file, track_number=None, index=None,
                  num_threads=None, seek_mode=FFMS_SEEK_NORMAL):
@@ -489,6 +490,7 @@ class VideoSource(VideoType, Source):
 
     def get_frame_by_time(self, time):
         """Retrieve a video frame at a given timestamp.
+        (Closest frame from PTS)
         """
         frame = FFMS_GetFrameByTime(self._source, time, byref(err_info))
         if not frame:
@@ -762,11 +764,9 @@ class Track:
         """List of timecodes
         """
         if self._timecodes is None:
-            time_base = self.time_base
-            self._timecodes = [
-                frame_info.PTS * time_base.Num / time_base.Den
-                for frame_info in self.frame_info_list
-            ]
+            num, den = self.time_base.Num / self.time_base.Den
+            self._timecodes = [frame_info.PTS * num / den
+                               for frame_info in self.frame_info_list]
         return self._timecodes
 
     def write_timecodes(self, timecodes_file=None):
