@@ -778,6 +778,8 @@ class Track:
 class VideoTrack(VideoType, Track):
     """FFMS_Track of type FFMS_TYPE_VIDEO
     """
+    _KEYFRAME_FORMAT_VERSION = 1
+
     @property
     def keyframes(self):
         """List of keyframe positions
@@ -791,15 +793,16 @@ class VideoTrack(VideoType, Track):
         """
         return [self.timecodes[n] for n in self.keyframes]
 
-    def write_keyframes(self, keyframes_file=None, version=1):
+    def write_keyframes(self, keyframes_file=None):
         """Write keyframe numbers to disk.
         """
         if not keyframes_file:
             keyframes_file = self._get_output_file("kf")
-        if version == 1:
+        if self._KEYFRAME_FORMAT_VERSION == 1:
             with open(keyframes_file, "w") as f:
-                f.write("# keyframe format v{}\n".format(version))
-                # Though keyframe format v1 requires an FPS line,
+                f.write("# keyframe format v{}\n"
+                        .format(self._KEYFRAME_FORMAT_VERSION))
+                # Though keyframe format v1 has an FPS line,
                 # we can’t rely on it to properly calculate timecodes.
                 if self.index.source_file:
                     vsource = VideoSource(self.index.source_file, self.number,
@@ -811,7 +814,8 @@ class VideoTrack(VideoType, Track):
                 f.write("fps {:f}\n".format(fps))
                 f.writelines(["{:d}\n".format(n) for n in self.keyframes])
         else:
-            raise ValueError("unsupported version: {}".format(version))
+            raise ValueError("unsupported keyframe format version: {}"
+                             .format(self._KEYFRAME_FORMAT_VERSION))
 
     def write_timecodes(self, timecodes_file=None):
         """Write timecodes to disk.
