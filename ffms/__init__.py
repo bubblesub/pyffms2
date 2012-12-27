@@ -769,15 +769,6 @@ class Track:
                                for frame_info in self.frame_info_list]
         return self._timecodes
 
-    def write_timecodes(self, timecodes_file=None):
-        """Write timecodes to disk.
-        """
-        if not timecodes_file:
-            timecodes_file = self._get_output_file("tc")
-        if FFMS_WriteTimecodes(self._track, get_encoded_path(timecodes_file),
-                               byref(err_info)):
-            raise Error
-
     def _get_output_file(self, ext):
         index_file = (self.index.index_file or
                       self.index.source_file + FFINDEX_EXT)
@@ -821,6 +812,15 @@ class VideoTrack(VideoType, Track):
                 f.writelines(["{:d}\n".format(n) for n in self.keyframes])
         else:
             raise ValueError("unsupported version: {}".format(version))
+
+    def write_timecodes(self, timecodes_file=None):
+        """Write timecodes to disk.
+        """
+        if not timecodes_file:
+            timecodes_file = self._get_output_file("tc")
+        if FFMS_WriteTimecodes(self._track, get_encoded_path(timecodes_file),
+                               byref(err_info)):
+            raise Error
 
 
 class AudioTrack(AudioType, Track):
