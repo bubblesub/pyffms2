@@ -121,6 +121,7 @@ def main():
                     track.write_keyframes()
 
     except ffms.Error as e:
+        print("\n")
         print("Error:", e, file=sys.stderr)
         return 1
 
