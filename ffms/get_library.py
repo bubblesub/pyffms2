@@ -17,7 +17,6 @@
 
 import ctypes
 import os
-import sys
 from ctypes.util import find_library
 
 
