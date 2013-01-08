@@ -17,6 +17,7 @@
 
 import ctypes
 import os
+import sys
 from ctypes.util import find_library
 
 
@@ -71,14 +72,16 @@ if os.name == "nt":
                 lib_path = find_library(dll_name)
                 if not lib_path:
                     try:
-                        script_path = os.path.abspath(__file__)
+                        script_paths = [os.path.abspath(__file__)]
                     except NameError:
-                        pass
-                    else:
+                        script_paths = []
+                    script_paths.append(sys.argv[0])
+                    for script_path in script_paths:
                         path = os.path.join(os.path.dirname(script_path),
                                             dll_name)
                         if os.path.isfile(path):
                             lib_path = path
+                            break
             if lib_path:
                 break
         return lib_path
