@@ -764,7 +764,7 @@ class Track:
         """List of timecodes
         """
         if self._timecodes is None:
-            num, den = self.time_base.Num / self.time_base.Den
+            num, den = self.time_base.Num, self.time_base.Den
             self._timecodes = [frame_info.PTS * num / den
                                for frame_info in self.frame_info_list]
         return self._timecodes
