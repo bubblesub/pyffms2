@@ -11,3 +11,4 @@ MANIFEST
 
 ffms2*.dll
 *.ffindex
+windows/*
