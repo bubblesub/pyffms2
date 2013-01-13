@@ -24,6 +24,7 @@ import sys
 import time
 
 from collections import namedtuple
+from fractions import Fraction
 
 try:
     from collections.abc import Iterable, Sized
@@ -594,6 +595,22 @@ def _get_planes(frame):
 FFMS_Frame.planes = property(_get_planes)
 
 
+def _get_fps(properties):
+    return Fraction(properties.FPSNumerator, properties.FPSDenominator)
+
+
+def _get_rff(properties):
+    return Fraction(properties.RFFNumerator, properties.RFFDenominator)
+
+
+def _get_sar(properties):
+    return Fraction(properties.SARNum, properties.SARDen)
+
+FFMS_VideoProperties.fps = property(_get_fps)
+FFMS_VideoProperties.rff = property(_get_rff)
+FFMS_VideoProperties.sar = property(_get_sar)
+
+
 class AudioSource(AudioType, Source):
     """FFMS_AudioSource
     """
@@ -771,14 +788,15 @@ class VideoTrack(VideoType, Track):
     def time_base(self):
         """Time base
         """
-        return FFMS_GetTimeBase(self._track)[0]
+        time_base = FFMS_GetTimeBase(self._track)[0]
+        return Fraction(time_base.Num, time_base.Den)
 
     @property
     def timecodes(self):
         """List of timecodes
         """
         if self._timecodes is None:
-            num, den = self.time_base.Num, self.time_base.Den
+            num, den = self.time_base.numerator, self.time_base.denominator
             self._timecodes = [frame_info.PTS * num / den
                                for frame_info in self.frame_info_list]
         return self._timecodes
