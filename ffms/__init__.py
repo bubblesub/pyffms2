@@ -725,7 +725,6 @@ class Track:
         self.number = number
         self.index = index
         self._frame_info_list = None
-        self._timecodes = None
 
     @classmethod
     def create(cls, track, number, index):
@@ -743,12 +742,6 @@ class Track:
         return FFMS_GetTrackType(self._track)
 
     @property
-    def time_base(self):
-        """Time base
-        """
-        return FFMS_GetTimeBase(self._track)[0]
-
-    @property
     def frame_info_list(self):
         """List of frame information
         """
@@ -758,16 +751,6 @@ class Track:
                 for n in range(FFMS_GetNumFrames(self._track))
             ]
         return self._frame_info_list
-
-    @property
-    def timecodes(self):
-        """List of timecodes
-        """
-        if self._timecodes is None:
-            num, den = self.time_base.Num, self.time_base.Den
-            self._timecodes = [frame_info.PTS * num / den
-                               for frame_info in self.frame_info_list]
-        return self._timecodes
 
     def _get_output_file(self, ext):
         index_file = (self.index.index_file or
@@ -779,6 +762,35 @@ class VideoTrack(VideoType, Track):
     """FFMS_Track of type FFMS_TYPE_VIDEO
     """
     _KEYFRAME_FORMAT_VERSION = 1
+
+    def __init__(self, track, number, index):
+        super().__init__(track, number, index)
+        self._timecodes = None
+
+    @property
+    def time_base(self):
+        """Time base
+        """
+        return FFMS_GetTimeBase(self._track)[0]
+
+    @property
+    def timecodes(self):
+        """List of timecodes
+        """
+        if self._timecodes is None:
+            num, den = self.time_base.Num, self.time_base.Den
+            self._timecodes = [frame_info.PTS * num / den
+                               for frame_info in self.frame_info_list]
+        return self._timecodes
+
+    def write_timecodes(self, timecodes_file=None):
+        """Write timecodes to disk.
+        """
+        if not timecodes_file:
+            timecodes_file = self._get_output_file("tc")
+        if FFMS_WriteTimecodes(self._track, get_encoded_path(timecodes_file),
+                               byref(err_info)):
+            raise Error
 
     @property
     def keyframes(self):
@@ -816,15 +828,6 @@ class VideoTrack(VideoType, Track):
         else:
             raise ValueError("unsupported keyframe format version: {}"
                              .format(self._KEYFRAME_FORMAT_VERSION))
-
-    def write_timecodes(self, timecodes_file=None):
-        """Write timecodes to disk.
-        """
-        if not timecodes_file:
-            timecodes_file = self._get_output_file("tc")
-        if FFMS_WriteTimecodes(self._track, get_encoded_path(timecodes_file),
-                               byref(err_info)):
-            raise Error
 
 
 class AudioTrack(AudioType, Track):
