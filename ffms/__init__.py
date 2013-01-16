@@ -31,11 +31,6 @@ try:
 except ImportError:
     from collections import Iterable, Sized
 
-try:
-    from multiprocessing import cpu_count
-except (ImportError, NotImplementedError):
-    cpu_count = None
-
 from ctypes import *
 
 # TODO: Use stdlib if numpy is not available.
@@ -458,16 +453,14 @@ class Source:
 class VideoSource(VideoType, Source):
     """FFMS_VideoSource
     """
-    _MAX_THREADS = min(cpu_count(), 8) if cpu_count is not None else 1
-
     def __init__(self, source_file, track_number=None, index=None,
-                 num_threads=None, seek_mode=FFMS_SEEK_NORMAL):
+                 num_threads=0, seek_mode=FFMS_SEEK_NORMAL):
         """Create a video source object.
         """
         self._FFMS_DestroyVideoSource = FFMS_DestroyVideoSource
         super().__init__(source_file, track_number, index)
-        self.num_threads = (num_threads if num_threads is not None
-                            else self._MAX_THREADS)
+        # GetNumberOfLogicalCPUs() if Threads < 1
+        self.num_threads = num_threads
         self._source = FFMS_CreateVideoSource(
             get_encoded_path(self.index.source_file), self.track_number,
             self.index._index, self.num_threads, seek_mode, byref(err_info))
@@ -483,7 +476,7 @@ class VideoSource(VideoType, Source):
         """
         frame = FFMS_GetFrame(self._source, n, byref(err_info))
         if not frame:
-            # HACK: Seems like it can fail sometimes. Fixed by retrying…
+            # HACK: Seems to fail sometimes. Fixed by retrying…
             frame = FFMS_GetFrame(self._source, n, byref(err_info))
             if not frame:
                 raise Error
@@ -796,7 +789,8 @@ class VideoTrack(VideoType, Track):
         """List of timecodes
         """
         if self._timecodes is None:
-            num, den = self.time_base.numerator, self.time_base.denominator
+            time_base = self.time_base
+            num, den = time_base.numerator, time_base.denominator
             self._timecodes = [frame_info.PTS * num / den
                                for frame_info in self.frame_info_list]
         return self._timecodes
