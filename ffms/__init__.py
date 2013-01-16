@@ -226,11 +226,11 @@ class Indexer:
     """FFMS_Indexer
     """
     _AUDIO_DUMP_EXT = ".w64"
+    _FFMS_CancelIndexing = FFMS_CancelIndexing
 
     def __init__(self, source_file, demuxer=FFMS_SOURCE_DEFAULT):
         """Create an indexer object for the given source file.
         """
-        self._FFMS_CancelIndexing = FFMS_CancelIndexing
         self._indexer = FFMS_CreateIndexerWithDemuxer(
             get_encoded_path(source_file), demuxer, byref(err_info))
         if not self._indexer:
@@ -312,8 +312,9 @@ class Indexer:
 class Index:
     """FFMS_Index
     """
+    _FFMS_DestroyIndex = FFMS_DestroyIndex
+
     def __init__(self, index, index_file=None, source_file=None):
-        self._FFMS_DestroyIndex = FFMS_DestroyIndex
         self._index = index
         self.index_file = index_file
         self.source_file = source_file
@@ -453,11 +454,12 @@ class Source:
 class VideoSource(VideoType, Source):
     """FFMS_VideoSource
     """
+    _FFMS_DestroyVideoSource = FFMS_DestroyVideoSource
+
     def __init__(self, source_file, track_number=None, index=None,
                  num_threads=0, seek_mode=FFMS_SEEK_NORMAL):
         """Create a video source object.
         """
-        self._FFMS_DestroyVideoSource = FFMS_DestroyVideoSource
         super().__init__(source_file, track_number, index)
         # GetNumberOfLogicalCPUs() if Threads < 1
         self.num_threads = num_threads
@@ -615,12 +617,12 @@ class AudioSource(AudioType, Source):
         numpy.float32,
         numpy.float64,
     ]
+    _FFMS_DestroyAudioSource = FFMS_DestroyAudioSource
 
     def __init__(self, source_file, track_number=None, index=None,
                  delay_mode=FFMS_DELAY_FIRST_VIDEO_TRACK):
         """Create an audio source object.
         """
-        self._FFMS_DestroyAudioSource = FFMS_DestroyAudioSource
         super().__init__(source_file, track_number, index)
         self._source = FFMS_CreateAudioSource(
             get_encoded_path(self.index.source_file), self.track_number,
