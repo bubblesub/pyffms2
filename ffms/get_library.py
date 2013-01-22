@@ -54,7 +54,7 @@ if os.name == "nt":
 
     if get_bit_architecture() == 64:
         def get_win_format(win_format, win64_format):
-            return win64_format if win64_format else win_format
+            return win64_format or win_format
     else:
         def get_win_format(win_format, win64_format):
             return win_format
@@ -63,27 +63,21 @@ if os.name == "nt":
         win_formats = get_win_format(win_format, win64_format)
         if isinstance(win_formats, str):
             win_formats = [win_formats]
+        absdir = lambda p: os.path.dirname(os.path.abspath(p))
+        try:
+            script_dirs = [absdir(__file__)]
+        except NameError:
+            script_dirs = []
+        script_dirs.append(absdir(sys.argv[0]))
         for win_format in win_formats:
             dll_name = win_format.format(name)
-            if os.path.isfile(dll_name):
-                lib_path = dll_name
-            else:
-                lib_path = find_library(dll_name)
-                if not lib_path:
-                    try:
-                        script_paths = [os.path.abspath(__file__)]
-                    except NameError:
-                        script_paths = []
-                    script_paths.append(sys.argv[0])
-                    for script_path in script_paths:
-                        path = os.path.join(os.path.dirname(script_path),
-                                            dll_name)
-                        if os.path.isfile(path):
-                            lib_path = path
-                            break
+            for script_dir in script_dirs:
+                lib_path = os.path.join(script_dir, dll_name)
+                if os.path.isfile(lib_path):
+                    return lib_path
+            lib_path = find_library(dll_name)
             if lib_path:
-                break
-        return lib_path
+                return lib_path
 
     def load_library(library_path, mode, handle, use_errno, use_last_error,
                      win_class_name, win_attr_format):
@@ -94,17 +88,26 @@ if os.name == "nt":
             lib = library_class(library_path, mode, handle,
                                 use_errno, use_last_error)
             if win_attr_format:
-                class Lib:
-                    """Windows library
+                class LibWithAttrFormat:
+                    """Library with attribute formatter
                     """
                     def __init__(self, lib, attr_format):
                         self.lib = lib
                         self.attr_format = attr_format
 
-                    def __getattr__(self, name):
-                        return getattr(self.lib, self.attr_format.format(name))
+                    def __repr__(self):
+                        return "{}({!r}, {!r})".format(
+                            self.__class__.__name__,
+                            self.lib, self.attr_format)
 
-                lib = Lib(lib, win_attr_format)
+                    def __getattr__(self, name):
+                        try:
+                            return getattr(self.lib,
+                                           self.attr_format.format(name))
+                        except AttributeError:
+                            return getattr(self.lib, name)
+
+                lib = LibWithAttrFormat(lib, win_attr_format)
             return lib
         finally:
             os.chdir(cwd)
