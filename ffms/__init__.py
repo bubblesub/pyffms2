@@ -556,7 +556,8 @@ class VideoSource(VideoType, Source):
 
     @contextlib.contextmanager
     def input_format(self, color_space=FFMS_CS_UNSPECIFIED,
-                     color_range=FFMS_CR_UNSPECIFIED, pixel_format=-1):
+                     color_range=FFMS_CR_UNSPECIFIED,
+                     pixel_format=PIX_FMT_NONE):
         """Context manager to override the source format
         """
         self.set_input_format(color_space, color_range, pixel_format)
