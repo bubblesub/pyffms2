@@ -433,7 +433,14 @@ class Source:
         if not index:
             try:
                 index = Index.read(source_file=source_file)
+                if track_number is None:
+                    track_number = index.get_first_indexed_track_of_type(
+                        self.type)
+                elif not index.tracks[track_number].frame_info_list:
+                    index = None
             except Error:
+                index = None
+            if not index:
                 indexer = Indexer(source_file)
                 if track_number is None:
                     for track_number, i in enumerate(indexer.track_info_list):
@@ -443,10 +450,9 @@ class Source:
                         raise Error("no suitable track",
                                     FFMS_ERROR_INDEX, FFMS_ERROR_NOT_AVAILABLE)
                 index = indexer.do_indexing([track_number])
-        self.track_number = (
-            track_number if track_number is not None
-            else index.get_first_indexed_track_of_type(self.type)
-        )
+        elif track_number is None:
+            track_number = index.get_first_indexed_track_of_type(self.type)
+        self.track_number = track_number
         self.index = index
         self._track = None
 
