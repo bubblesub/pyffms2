@@ -114,7 +114,7 @@ def main():
                     print("\taspect ratio =", aspect_ratio)
                     print("\tfps =",
                           vprops.FPSNumerator / vprops.FPSDenominator)
-                    print("\tduration =", vprops.LastTime - vprops.FirstTime)
+                    print("\tduration =", vprops.LastTime)
                     print("\tnum frames =", vprops.NumFrames)
                 elif type_ == ffms.FFMS_TYPE_AUDIO:
                     asource = ffms.AudioSource(source_file, n, index)
@@ -128,7 +128,7 @@ def main():
                     #print("\tbits per sample =", aprops.BitsPerSample)
                     print("\tsample format =", sample_format_name)
                     print("\tnum channels =", aprops.Channels)
-                    print("\tduration =", aprops.LastTime - aprops.FirstTime)
+                    print("\tduration =", aprops.LastTime)
                     print("\tnum samples =", aprops.NumSamples)
         print()
 

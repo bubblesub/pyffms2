@@ -16,9 +16,14 @@ class TestFFMS(unittest.TestCase):
     test_dir = "test"
 
     tests = [
-        (SourceInfo("x264.mkv", "matroska"), [
-            TrackInfo(ffms.FFMS_TYPE_VIDEO, "h264"),
-        ]),
+        (
+            SourceInfo(
+                "CINT_Nik_H264_720_512kb.mp4", "mov,mp4,m4a,3gp,3g2,mj2"
+            ), [
+                TrackInfo(ffms.FFMS_TYPE_VIDEO, "h264"),
+                TrackInfo(ffms.FFMS_TYPE_AUDIO, "aac"),
+            ]
+        ),
     ]
 
     def test_samples(self):
@@ -26,7 +31,7 @@ class TestFFMS(unittest.TestCase):
             source_path = os.path.join(self.test_dir, source_info.file)
             indexer = ffms.Indexer(source_path)
             self.assertEqual(indexer.format_name, source_info.format_name)
-            index = ffms.Index.make(source_path)
+            index = ffms.Index.make(source_path, -1)
 
             for n, (type_, codec_name) in enumerate(indexer.track_info_list):
                 expected = track_info_list[n]
