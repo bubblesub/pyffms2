@@ -688,15 +688,24 @@ class AudioLinearAccess(Sized, Iterable):
                           else self.num_samples + end_frame if end_frame < 0
                           else end_frame)
         sample_rate = parent.properties.SampleRate
-        self.count_l, mod = divmod(sample_rate, rate)
-        if not mod:
-            self.samples_per_frame = self.count_h = self.count_l
-            self.l = self.h = rate // 2
+        if rate >= 1:
+            rate = int(round(rate))
+            self.count_l, mod = divmod(sample_rate, rate)
+            if mod:
+                self.samples_per_frame = sample_rate / rate
+                self.count_h = self.count_l + 1
+                self.l = self.count_h * rate - sample_rate
+                self.h = rate - self.l
+                return
+        elif rate > 0:
+            # Not accurate if round(1 / rate) != 1 / rate
+            self.count_l = int(round(sample_rate / rate))
+        elif rate == 0:
+            self.count_l = self.num_samples
         else:
-            self.samples_per_frame = sample_rate / rate
-            self.count_h = self.count_l + 1
-            self.l = self.count_h * rate - sample_rate
-            self.h = rate - self.l
+            raise ValueError("rate can’t be negative")
+        self.samples_per_frame = self.count_l
+        self.l = None
 
     def __len__(self):
         return math.ceil(self.num_samples / self.samples_per_frame)
@@ -704,28 +713,38 @@ class AudioLinearAccess(Sized, Iterable):
     def __iter__(self):
         source = self.parent._source
         l, count_l = self.l, self.count_l
-        h, count_h = self.h, self.count_h
         audio_l = numpy.empty((count_l, self.parent.properties.Channels),
                               self.parent.sample_type)
         buf_l = audio_l.ctypes.data_as(c_void_p)
-        audio_h = numpy.empty((count_h, self.parent.properties.Channels),
-                              self.parent.sample_type)
-        buf_h = audio_h.ctypes.data_as(c_void_p)
         p = self.start_frame
         end = self.end_frame
-        loop = True
-        while loop:
-            for n_range, count, audio, buf in [(h, count_h, audio_h, buf_h),
-                                               (l, count_l, audio_l, buf_l)]:
-                for _ in range(n_range):
-                    np = p + count
-                    if np > end:
-                        loop = False
-                        break
-                    if FFMS_GetAudio(source, buf, p, count, byref(err_info)):
-                        raise Error
-                    p = np
-                    yield audio
+        if l is None:
+            np = p + count_l
+            while np <= end:
+                if FFMS_GetAudio(source, buf_l, p, count_l, byref(err_info)):
+                    raise Error
+                yield audio_l
+                p = np
+                np = p + count_l
+        else:
+            h, count_h = self.h, self.count_h
+            audio_h = numpy.empty((count_h, self.parent.properties.Channels),
+                                  self.parent.sample_type)
+            buf_h = audio_h.ctypes.data_as(c_void_p)
+            loop = True
+            while loop:
+                for n, count, audio, buf in [(h, count_h, audio_h, buf_h),
+                                             (l, count_l, audio_l, buf_l)]:
+                    for _ in range(n):
+                        np = p + count
+                        if np > end:
+                            loop = False
+                            break
+                        if FFMS_GetAudio(source, buf, p, count,
+                                         byref(err_info)):
+                            raise Error
+                        yield audio
+                        p = np
         count = end - p
         if count:
             audio = numpy.empty((count, self.parent.properties.Channels),
