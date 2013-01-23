@@ -14,7 +14,7 @@ lib = get_library(
     win_class_name="WinDLL"
 )
 
-FFMS_VERSION = ((2 << 24) | (17 << 16) | (2 << 8) | 1)
+FFMS_VERSION = ((2 << 24) | (17 << 16) | (3 << 8) | 0)
 FUNCTYPE = WINFUNCTYPE if os.name == "nt" else CFUNCTYPE
 STRING = c_char_p
 
