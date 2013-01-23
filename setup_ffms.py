@@ -15,7 +15,7 @@ if os.name == "nt":
         try:
             return int.bit_length(sys.maxsize) + 1
         except (TypeError, AttributeError):
-            return 64 if sys.maxsize > 2 ** 32 else 32
+            return 64 if sys.maxsize > (1 << 32) else 32
 
     DLL_PATH = (r"windows\x64\ffms2.dll" if get_bit_architecture() == 64
                 else r"windows\ffms2.dll")

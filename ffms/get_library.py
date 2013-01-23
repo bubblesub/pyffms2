@@ -50,7 +50,7 @@ if os.name == "nt":
         try:
             return int.bit_length(sys.maxsize) + 1
         except (TypeError, AttributeError):
-            return 64 if sys.maxsize > 2 ** 32 else 32
+            return 64 if sys.maxsize > (1 << 32) else 32
 
     if get_bit_architecture() == 64:
         def get_win_format(win_format, win64_format):
@@ -92,20 +92,20 @@ if os.name == "nt":
                     """Library with attribute formatter
                     """
                     def __init__(self, lib, attr_format):
-                        self.lib = lib
-                        self.attr_format = attr_format
+                        self.__lib = lib
+                        self.__attr_format = attr_format
 
                     def __repr__(self):
                         return "{}({!r}, {!r})".format(
                             self.__class__.__name__,
-                            self.lib, self.attr_format)
+                            self.__lib, self.__attr_format)
 
                     def __getattr__(self, name):
                         try:
-                            return getattr(self.lib,
-                                           self.attr_format.format(name))
+                            return getattr(self.__lib,
+                                           self.__attr_format.format(name))
                         except AttributeError:
-                            return getattr(self.lib, name)
+                            return getattr(self.__lib, name)
 
                 lib = LibWithAttrFormat(lib, win_attr_format)
             return lib
