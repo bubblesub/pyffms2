@@ -82,8 +82,8 @@ On Windows, you may use one of the MSI binary packages provided on the
 `download page <https://bitbucket.org/spirit/ffms/downloads>`_.
 
 
-Requirements
-------------
+Prerequisites
+-------------
 
 - `Python 3.2+ <http://www.python.org>`_ (or 2.7)
 - `FFmpegSource <http://code.google.com/p/ffmpegsource>`_
