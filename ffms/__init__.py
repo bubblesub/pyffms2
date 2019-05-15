@@ -178,18 +178,6 @@ def get_pix_fmt(name):
     return FFMS_GetPixFmt(name.encode())
 
 
-def get_present_sources():
-    """Check what source modules the library was compiled with.
-    """
-    return FFMS_GetPresentSources()
-
-
-def get_enabled_sources():
-    """Check what source modules are actually available for use.
-    """
-    return FFMS_GetEnabledSources()
-
-
 def get_log_level():
     """Get FFmpeg message level.
     """
@@ -228,11 +216,12 @@ class Indexer:
     _AUDIO_DUMP_EXT = ".w64"
     _FFMS_CancelIndexing = FFMS_CancelIndexing
 
-    def __init__(self, source_file, demuxer=FFMS_SOURCE_DEFAULT):
+    def __init__(self, source_file):
         """Create an indexer object for the given source file.
         """
-        self._indexer = FFMS_CreateIndexerWithDemuxer(
-            get_encoded_path(source_file), demuxer, byref(err_info))
+        self._indexer = FFMS_CreateIndexer(
+            get_encoded_path(source_file), byref(err_info)
+        )
         if not self._indexer:
             raise Error
         self.source_file = source_file
@@ -248,13 +237,14 @@ class Indexer:
         """
         self._check_indexer()
         if self._track_info_list is None:
-            TrackInfo = namedtuple("TrackInfo", ("type", "codec_name"))
+            TrackInfo = namedtuple("TrackInfo", ("num", "type", "codec_name"))
             self._track_info_list = []
             for n in range(FFMS_GetNumTracksI(self._indexer)):
                 codec_name = FFMS_GetCodecNameI(self._indexer, n)
                 if isinstance(codec_name, bytes):
                     codec_name = codec_name.decode()
-                info = TrackInfo(FFMS_GetTrackTypeI(self._indexer, n),
+                info = TrackInfo(n,
+                                 FFMS_GetTrackTypeI(self._indexer, n),
                                  codec_name)
                 self._track_info_list.append(info)
         return self._track_info_list
@@ -269,35 +259,21 @@ class Indexer:
             format_name = format_name.decode()
         return format_name
 
-    @property
-    def source_type(self):
-        """Source module that was used to open the indexer
-        """
+    def track_index_settings(self, track, index, dump):
         self._check_indexer()
-        return FFMS_GetSourceTypeI(self._indexer)
+        FFMS_TrackIndexSettings(self._indexer, track, int(index), int(dump))
 
-    def do_indexing(self, index_mask=0, dump_mask=0,
-                    anc=FFMS_DefaultAudioFilename,
-                    anc_private=DEFAULT_AUDIO_FILENAME_FORMAT,
-                    error_handling=FFMS_IEH_STOP_TRACK,
-                    ic=None, ic_private=None):
+    def set_progress_callback(self, ic, ic_private=None):
+        self._check_indexer()
+        ic = TIndexCallback(ic) if ic else cast(ic, TIndexCallback)
+        FFMS_SetProgressCallback(self._indexer, ic, cast(ic_private, c_void_p))
+
+    def do_indexing2(self, error_handling=FFMS_IEH_STOP_TRACK):
         """Index the file.
         """
         self._check_indexer()
-        if isinstance(index_mask, Iterable):
-            index_mask = list_to_mask(index_mask)
-        if isinstance(dump_mask, Iterable):
-            dump_mask = list_to_mask(dump_mask)
-        if anc is FFMS_DefaultAudioFilename and isinstance(anc_private, str):
-            if not anc_private.lower().endswith(self._AUDIO_DUMP_EXT):
-                anc_private += self._AUDIO_DUMP_EXT
-            anc_private = anc_private.encode(FILENAME_ENCODING)
-        anc = TAudioNameCallback(anc) if anc else cast(anc, TAudioNameCallback)
-        ic = TIndexCallback(ic) if ic else cast(ic, TIndexCallback)
-        index = FFMS_DoIndexing(self._indexer, index_mask, dump_mask,
-                                anc, cast(anc_private, c_void_p),
+        index = FFMS_DoIndexing2(self._indexer,
                                 error_handling,
-                                ic, cast(ic_private, c_void_p),
                                 byref(err_info))
         self._indexer = None
         if not index:
@@ -321,16 +297,10 @@ class Index:
         self._tracks = None
 
     @classmethod
-    def make(cls, source_file, index_mask=0, dump_mask=0,
-             anc=FFMS_DefaultAudioFilename,
-             anc_private=DEFAULT_AUDIO_FILENAME_FORMAT,
-             error_handling=FFMS_IEH_STOP_TRACK,
-             ic=None, ic_private=None):
+    def make(cls, source_file, error_handling=FFMS_IEH_STOP_TRACK):
         """Index a given source file.
         """
-        return Indexer(source_file).do_indexing(
-            index_mask, dump_mask, anc, anc_private, error_handling,
-            ic, ic_private)
+        return Indexer(source_file).do_indexing2(error_handling)
 
     @classmethod
     def read(cls, index_file=None, source_file=None):
@@ -370,12 +340,6 @@ class Index:
         if FFMS_WriteIndex(get_encoded_path(self.index_file),
                            self._index, byref(err_info)):
             raise Error
-
-    @property
-    def source_type(self):
-        """Source module that was used to open the index.
-        """
-        return FFMS_GetSourceType(self._index)
 
     @property
     def error_handling(self):
@@ -442,14 +406,22 @@ class Source:
                 index = None
             if not index:
                 indexer = Indexer(source_file)
+
                 if track_number is None:
-                    for track_number, i in enumerate(indexer.track_info_list):
-                        if i.type == self.type:
+                    for track in indexer.track_info_list:
+                        if track.type == self.type:
                             break
                     else:
                         raise Error("no suitable track",
                                     FFMS_ERROR_INDEX, FFMS_ERROR_NOT_AVAILABLE)
-                index = indexer.do_indexing([track_number])
+                    track_number = track.num
+
+                for track in indexer.track_info_list:
+                    indexer.track_index_settings(
+                        track.num, track_number == track.num, 0
+                    )
+
+                index = indexer.do_indexing2()
         elif track_number is None:
             track_number = index.get_first_indexed_track_of_type(self.type)
         self.track_number = track_number

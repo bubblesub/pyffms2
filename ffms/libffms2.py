@@ -170,10 +170,6 @@ FFMS_AudioProperties._fields_ = [
     ('LastTime', c_double),
 ]
 TIndexCallback = FUNCTYPE(c_int, int64_t, int64_t, c_void_p)
-TAudioNameCallback = FUNCTYPE(
-    c_int, STRING, c_int, POINTER(FFMS_AudioProperties),
-    POINTER(c_char), c_int, c_void_p
-)
 
 FFMS_Init = lib.FFMS_Init
 FFMS_Init.restype = None
@@ -254,28 +250,17 @@ try:
     FFMS_ResetInputFormatV.argtypes = [POINTER(FFMS_VideoSource)]
 except AttributeError:
     FFMS_SetInputFormatV = FFMS_ResetInputFormatV = None
-#FFMS_SetPP = lib.FFMS_SetPP
-#FFMS_SetPP.restype = c_int
-#FFMS_SetPP.argtypes = [
-    #POINTER(FFMS_VideoSource), STRING, POINTER(FFMS_ErrorInfo)
-#]
-#FFMS_ResetPP = lib.FFMS_ResetPP
-#FFMS_ResetPP.restype = None
-#FFMS_ResetPP.argtypes = [POINTER(FFMS_VideoSource)]
 FFMS_DestroyIndex = lib.FFMS_DestroyIndex
 FFMS_DestroyIndex.restype = None
 FFMS_DestroyIndex.argtypes = [POINTER(FFMS_Index)]
-FFMS_GetSourceType = lib.FFMS_GetSourceType
-FFMS_GetSourceType.restype = c_int
-FFMS_GetSourceType.argtypes = [POINTER(FFMS_Index)]
-FFMS_GetSourceTypeI = lib.FFMS_GetSourceTypeI
-FFMS_GetSourceTypeI.restype = c_int
-FFMS_GetSourceTypeI.argtypes = [POINTER(FFMS_Indexer)]
 FFMS_GetFirstTrackOfType = lib.FFMS_GetFirstTrackOfType
 FFMS_GetFirstTrackOfType.restype = c_int
 FFMS_GetFirstTrackOfType.argtypes = [
     POINTER(FFMS_Index), c_int, POINTER(FFMS_ErrorInfo)
 ]
+FFMS_TrackIndexSettings = lib.FFMS_TrackIndexSettings
+FFMS_TrackIndexSettings.restype = None
+FFMS_TrackIndexSettings.argtypes = [POINTER(FFMS_Indexer), c_int, c_int, c_int]
 FFMS_GetFirstIndexedTrackOfType = lib.FFMS_GetFirstIndexedTrackOfType
 FFMS_GetFirstIndexedTrackOfType.restype = c_int
 FFMS_GetFirstIndexedTrackOfType.argtypes = [
@@ -322,30 +307,19 @@ FFMS_WriteTimecodes.restype = c_int
 FFMS_WriteTimecodes.argtypes = [
     POINTER(FFMS_Track), STRING, POINTER(FFMS_ErrorInfo)
 ]
-FFMS_MakeIndex = lib.FFMS_MakeIndex
-FFMS_MakeIndex.restype = POINTER(FFMS_Index)
-FFMS_MakeIndex.argtypes = [
-    STRING, c_int, c_int, TAudioNameCallback, c_void_p, c_int, TIndexCallback,
-    c_void_p, POINTER(FFMS_ErrorInfo)
-]
-FFMS_DefaultAudioFilename = lib.FFMS_DefaultAudioFilename
-FFMS_DefaultAudioFilename.restype = c_int
-FFMS_DefaultAudioFilename.argtypes = [
-    STRING, c_int, POINTER(FFMS_AudioProperties), STRING, c_int, c_void_p
+FFMS_SetProgressCallback = lib.FFMS_SetProgressCallback
+FFMS_SetProgressCallback.restype = c_int
+FFMS_SetProgressCallback.argtypes = [
+    POINTER(FFMS_Indexer), TIndexCallback, c_void_p
 ]
 FFMS_CreateIndexer = lib.FFMS_CreateIndexer
 FFMS_CreateIndexer.restype = POINTER(FFMS_Indexer)
 FFMS_CreateIndexer.argtypes = [STRING, POINTER(FFMS_ErrorInfo)]
-FFMS_CreateIndexerWithDemuxer = lib.FFMS_CreateIndexerWithDemuxer
-FFMS_CreateIndexerWithDemuxer.restype = POINTER(FFMS_Indexer)
-FFMS_CreateIndexerWithDemuxer.argtypes = [
-    STRING, c_int, POINTER(FFMS_ErrorInfo)
-]
-FFMS_DoIndexing = lib.FFMS_DoIndexing
-FFMS_DoIndexing.restype = POINTER(FFMS_Index)
-FFMS_DoIndexing.argtypes = [
-    POINTER(FFMS_Indexer), c_int, c_int, TAudioNameCallback, c_void_p, c_int,
-    TIndexCallback, c_void_p, POINTER(FFMS_ErrorInfo)
+FFMS_DoIndexing2 = lib.FFMS_DoIndexing2
+FFMS_DoIndexing2.restype = POINTER(FFMS_Index)
+FFMS_DoIndexing2.argtypes = [
+    POINTER(FFMS_Indexer), c_int,
+    POINTER(FFMS_ErrorInfo)
 ]
 FFMS_CancelIndexing = lib.FFMS_CancelIndexing
 FFMS_CancelIndexing.restype = None
@@ -366,12 +340,6 @@ FFMS_WriteIndex.argtypes = [
 FFMS_GetPixFmt = lib.FFMS_GetPixFmt
 FFMS_GetPixFmt.restype = c_int
 FFMS_GetPixFmt.argtypes = [STRING]
-FFMS_GetPresentSources = lib.FFMS_GetPresentSources
-FFMS_GetPresentSources.restype = c_int
-FFMS_GetPresentSources.argtypes = []
-FFMS_GetEnabledSources = lib.FFMS_GetEnabledSources
-FFMS_GetEnabledSources.restype = c_int
-FFMS_GetEnabledSources.argtypes = []
 
 try:
     FFMS_GetErrorHandling = lib.FFMS_GetErrorHandling

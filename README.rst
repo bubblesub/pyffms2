@@ -23,7 +23,9 @@ Or you can create an indexer:
 
 Then create the index for the video source:
 
->>> index = indexer.do_indexing(-1)
+>>> for track in indexer.track_info_list:
+>>>     indexer.track_index_settings(track.num, 1, 0)
+>>> index = indexer.do_indexing2()
 >>> track_number = index.get_first_indexed_track_of_type(ffms.FFMS_TYPE_VIDEO)
 >>> vsource = ffms.VideoSource(source_file, track_number, index)
 

@@ -10,14 +10,6 @@ from collections import OrderedDict
 import ffms.console_mode #@UnusedImport
 
 
-DEMUXERS = OrderedDict([
-    ("default", ffms.FFMS_SOURCE_DEFAULT),
-    ("lavf", ffms.FFMS_SOURCE_LAVF),
-    ("matroska", ffms.FFMS_SOURCE_MATROSKA),
-    ("haalimpeg", ffms.FFMS_SOURCE_HAALIMPEG),
-    ("haaliogg", ffms.FFMS_SOURCE_HAALIOGG),
-])
-
 AV_LOGS = [
     ffms.AV_LOG_QUIET,
     ffms.AV_LOG_PANIC,
@@ -66,10 +58,6 @@ def parse_args():
     parser.add_argument("-s", "--error-handling", metavar="N", type=int,
                         default=ffms.FFMS_IEH_STOP_TRACK,
                         help="audio decoding error handling")
-    parser.add_argument("-m", "--demuxer", metavar="NAME",
-                        default="default",
-                        help="use the specified demuxer ({})"
-                             .format(", ".join(DEMUXERS)))
     parser.add_argument("--version", action="version",
                         version="FFMS {}".format(ffms.get_version()),
                         help="show FFMS version number")
@@ -94,15 +82,16 @@ def main():
             print("Index file already exists:", output_file)
             index = ffms.Index.read(output_file, args.input_file)
         else:
-            indexer = ffms.Indexer(args.input_file, DEMUXERS[args.demuxer])
-            anc_private = args.audio_filename
+            indexer = ffms.Indexer(args.input_file)
+            for track in indexer.track_info_list:
+                indexer.track_index_settings(
+                    track.num,
+                    track.num & args.indexing_mask,
+                    track.num & args.decoding_mask
+                )
             ic = ffms.init_progress_callback() if args.progress else None
-            index = indexer.do_indexing(
-                args.indexing_mask, args.decoding_mask,
-                anc_private=anc_private,
-                error_handling=args.error_handling,
-                ic=ic
-            )
+            indexer.set_progress_callback(ic)
+            index = indexer.do_indexing2(error_handling=args.error_handling)
             if ic:
                 ic.done()
             stdout_write("Writing index…\n")
