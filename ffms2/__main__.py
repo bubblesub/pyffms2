@@ -7,25 +7,25 @@ import sys
 
 from collections import OrderedDict
 
-import ffms.console_mode #@UnusedImport
+import ffms2.console_mode #@UnusedImport
 
 
 AV_LOGS = [
-    ffms.AV_LOG_QUIET,
-    ffms.AV_LOG_PANIC,
-    ffms.AV_LOG_FATAL,
-    ffms.AV_LOG_ERROR,
-    ffms.AV_LOG_WARNING,
-    ffms.AV_LOG_INFO,
-    ffms.AV_LOG_VERBOSE,
-    ffms.AV_LOG_DEBUG,
+    ffms2.AV_LOG_QUIET,
+    ffms2.AV_LOG_PANIC,
+    ffms2.AV_LOG_FATAL,
+    ffms2.AV_LOG_ERROR,
+    ffms2.AV_LOG_WARNING,
+    ffms2.AV_LOG_INFO,
+    ffms2.AV_LOG_VERBOSE,
+    ffms2.AV_LOG_DEBUG,
 ]
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
-        prog="{} -m {}".format(os.path.basename(sys.executable), "ffms")
+        prog="{} -m {}".format(os.path.basename(sys.executable), "ffms2")
     )
     parser.add_argument("input_file", type=get_filename,
                         help="input media filename")
@@ -53,13 +53,13 @@ def parse_args():
                         default=0,
                         help="audio decoding mask (-1 for all)")
     parser.add_argument("-a", "--audio-filename", metavar="NAME",
-                        default=ffms.DEFAULT_AUDIO_FILENAME_FORMAT,
+                        default=ffms2.DEFAULT_AUDIO_FILENAME_FORMAT,
                         help="audio filename format")
     parser.add_argument("-s", "--error-handling", metavar="N", type=int,
-                        default=ffms.FFMS_IEH_STOP_TRACK,
+                        default=ffms2.FFMS_IEH_STOP_TRACK,
                         help="audio decoding error handling")
     parser.add_argument("--version", action="version",
-                        version="FFMS {}".format(ffms.get_version()),
+                        version="FFMS {}".format(ffms2.get_version()),
                         help="show FFMS version number")
     return parser.parse_args()
 
@@ -73,23 +73,23 @@ def get_filename(filename):
 
 def main():
     args = parse_args()
-    output_file = args.output_file or args.input_file + ffms.FFINDEX_EXT
-    ffms.set_log_level(AV_LOGS[args.verbose])
+    output_file = args.output_file or args.input_file + ffms2.FFINDEX_EXT
+    ffms2.set_log_level(AV_LOGS[args.verbose])
     stdout_write = sys.stdout.write if args.progress else lambda s: None
 
     try:
         if os.path.isfile(output_file) and not args.force:
             print("Index file already exists:", output_file)
-            index = ffms.Index.read(output_file, args.input_file)
+            index = ffms2.Index.read(output_file, args.input_file)
         else:
-            indexer = ffms.Indexer(args.input_file)
+            indexer = ffms2.Indexer(args.input_file)
             for track in indexer.track_info_list:
                 indexer.track_index_settings(
                     track.num,
                     track.num & args.indexing_mask,
                     track.num & args.decoding_mask
                 )
-            ic = ffms.init_progress_callback() if args.progress else None
+            ic = ffms2.init_progress_callback() if args.progress else None
             indexer.set_progress_callback(ic)
             index = indexer.do_indexing2(error_handling=args.error_handling)
             if ic:
@@ -100,16 +100,16 @@ def main():
         if args.timecodes:
             stdout_write("Writing timecodes…\n")
             for track in index.tracks:
-                if track.type == ffms.FFMS_TYPE_VIDEO:
+                if track.type == ffms2.FFMS_TYPE_VIDEO:
                     track.write_timecodes()
 
         if args.keyframes:
             stdout_write("Writing keyframes…\n")
             for track in index.tracks:
-                if track.type == ffms.FFMS_TYPE_VIDEO:
+                if track.type == ffms2.FFMS_TYPE_VIDEO:
                     track.write_keyframes()
 
-    except ffms.Error as e:
+    except ffms2.Error as e:
         print("\n")
         print("Error:", e, file=sys.stderr)
         return 1

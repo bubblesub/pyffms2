@@ -1,5 +1,5 @@
-ffms – Python bindings for FFmpegSource
-=======================================
+ffms2 – Python bindings for FFmpegSource
+========================================
 
 
 Example usage
@@ -7,14 +7,14 @@ Example usage
 
 If you don’t need to keep the index, create a video source right away:
 
->>> import ffms
+>>> import ffms2
 >>> source_file = "test/CINT_Nik_H264_720_512kb.mp4"
->>> vsource = ffms.VideoSource(source_file)
+>>> vsource = ffms2.VideoSource(source_file)
 
 
 Or you can create an indexer:
 
->>> indexer = ffms.Indexer(source_file)
+>>> indexer = ffms2.Indexer(source_file)
 >>> indexer.format_name
 'mov,mp4,m4a,3gp,3g2,mj2'
 >>> indexer.track_info_list
@@ -26,8 +26,8 @@ Then create the index for the video source:
 >>> for track in indexer.track_info_list:
 >>>     indexer.track_index_settings(track.num, 1, 0)
 >>> index = indexer.do_indexing2()
->>> track_number = index.get_first_indexed_track_of_type(ffms.FFMS_TYPE_VIDEO)
->>> vsource = ffms.VideoSource(source_file, track_number, index)
+>>> track_number = index.get_first_indexed_track_of_type(ffms2.FFMS_TYPE_VIDEO)
+>>> vsource = ffms2.VideoSource(source_file, track_number, index)
 
 
 Extract information from the video source:
@@ -51,8 +51,8 @@ array([41, 41, 41, ..., 41, 41, 41], dtype=uint8)
 
 Audio stuff:
 
->>> track_number = index.get_first_indexed_track_of_type(ffms.FFMS_TYPE_AUDIO)
->>> asource = ffms.AudioSource(source_file, track_number, index)
+>>> track_number = index.get_first_indexed_track_of_type(ffms2.FFMS_TYPE_AUDIO)
+>>> asource = ffms2.AudioSource(source_file, track_number, index)
 >>> aprops = asource.properties
 >>> aprops.SampleRate, aprops.BitsPerSample, aprops.Channels
 (48000, 16, 2)
