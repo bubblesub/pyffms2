@@ -1,14 +1,9 @@
-syntax: glob
 .*
 build/*
 dist/*
-MANIFEST
-*.cmd
 *.egg-info/*
 *.pyc
 *.pyo
-*$py.class
 
 ffms2*.dll
 *.ffindex
-windows/*
