@@ -1,6 +1,9 @@
 ffms2 – Python bindings for FFmpegSource
 ========================================
 
+This project is a fork that supports more recent versions of FFMS.
+The original repository can be found at https://bitbucket.org/spirit/ffms.
+
 Example usage
 -------------
 
