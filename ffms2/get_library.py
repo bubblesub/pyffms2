@@ -19,15 +19,22 @@ import ctypes
 import os
 from ctypes.util import find_library
 
-
 __all__ = ["get_library"]
 
 
-def get_library(name, mode=ctypes.DEFAULT_MODE, handle=None,
-                use_errno=False, use_last_error=False, *,
-                lib_name=None,
-                win_format="lib{}.dll", win64_format=None,
-                win_class_name="CDLL", win_attr_format=None):
+def get_library(
+    name,
+    mode=ctypes.DEFAULT_MODE,
+    handle=None,
+    use_errno=False,
+    use_last_error=False,
+    *,
+    lib_name=None,
+    win_format="lib{}.dll",
+    win64_format=None,
+    win_class_name="CDLL",
+    win_attr_format=None,
+):
     """Find and load a shared library.
     """
     library_path = get_library_path(name, win_format, win64_format)
@@ -35,8 +42,15 @@ def get_library(name, mode=ctypes.DEFAULT_MODE, handle=None,
         if not lib_name:
             lib_name = name
         raise OSError("can’t find {!r} library".format(lib_name))
-    return load_library(library_path, mode, handle, use_errno, use_last_error,
-                        win_class_name, win_attr_format)
+    return load_library(
+        library_path,
+        mode,
+        handle,
+        use_errno,
+        use_last_error,
+        win_class_name,
+        win_attr_format,
+    )
 
 
 if os.name == "nt":
@@ -53,9 +67,12 @@ if os.name == "nt":
             return 64 if sys.maxsize > (1 << 32) else 32
 
     if get_bit_architecture() == 64:
+
         def get_win_format(win_format, win64_format):
             return win64_format or win_format
+
     else:
+
         def get_win_format(win_format, win64_format):
             return win_format
 
@@ -79,18 +96,28 @@ if os.name == "nt":
             if lib_path:
                 return lib_path
 
-    def load_library(library_path, mode, handle, use_errno, use_last_error,
-                     win_class_name, win_attr_format):
+    def load_library(
+        library_path,
+        mode,
+        handle,
+        use_errno,
+        use_last_error,
+        win_class_name,
+        win_attr_format,
+    ):
         library_class = getattr(ctypes, win_class_name)
         cwd = os.getcwd()
         os.chdir(os.path.dirname(library_path) or ".")
         try:
-            lib = library_class(library_path, mode, handle,
-                                use_errno, use_last_error)
+            lib = library_class(
+                library_path, mode, handle, use_errno, use_last_error
+            )
             if win_attr_format:
+
                 class LibWithAttrFormat:
                     """Library with attribute formatter
                     """
+
                     def __init__(self, lib, attr_format):
                         self.__lib = lib
                         self.__attr_format = attr_format
@@ -98,12 +125,15 @@ if os.name == "nt":
                     def __repr__(self):
                         return "{}({!r}, {!r})".format(
                             self.__class__.__name__,
-                            self.__lib, self.__attr_format)
+                            self.__lib,
+                            self.__attr_format,
+                        )
 
                     def __getattr__(self, name):
                         try:
-                            return getattr(self.__lib,
-                                           self.__attr_format.format(name))
+                            return getattr(
+                                self.__lib, self.__attr_format.format(name)
+                            )
                         except AttributeError:
                             return getattr(self.__lib, name)
 
@@ -112,11 +142,21 @@ if os.name == "nt":
         finally:
             os.chdir(cwd)
 
+
 else:
+
     def get_library_path(name, win_format, win64_format):
         return find_library(name)
 
-    def load_library(library_path, mode, handle, use_errno, use_last_error,
-                     win_class_name, win_attr_format):
-        return ctypes.CDLL(library_path, mode, handle,
-                           use_errno, use_last_error)
+    def load_library(
+        library_path,
+        mode,
+        handle,
+        use_errno,
+        use_last_error,
+        win_class_name,
+        win_attr_format,
+    ):
+        return ctypes.CDLL(
+            library_path, mode, handle, use_errno, use_last_error
+        )

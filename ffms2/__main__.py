@@ -4,11 +4,9 @@
 import argparse
 import os
 import sys
-
 from collections import OrderedDict
 
-import ffms2.console_mode #@UnusedImport
-
+import ffms2.console_mode  # @UnusedImport
 
 AV_LOGS = [
     ffms2.AV_LOG_QUIET,
@@ -25,42 +23,86 @@ AV_LOGS = [
 def parse_args():
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
-        prog="{} -m {}".format(os.path.basename(sys.executable), "ffms2")
+        prog="{} -m {}".format(os.path.basename(sys.executable), "ffms2"),
     )
-    parser.add_argument("input_file", type=get_filename,
-                        help="input media filename")
-    parser.add_argument("output_file", nargs="?", type=get_filename,
-                        help="output index filename")
-    parser.add_argument("-f", "--force",
-                        action="store_true",
-                        help="overwrite existing index file")
-    parser.add_argument("-v", "--verbose",
-                        default=0, action="count",
-                        help="FFmpeg verbosity level (can be repeated)")
-    parser.add_argument("-p", "--disable-progress", dest="progress",
-                        action="store_false",
-                        help="disable progress reporting")
-    parser.add_argument("-c", "--timecodes",
-                        action="store_true",
-                        help="write timecodes for video tracks")
-    parser.add_argument("-k", "--keyframes",
-                        action="store_true",
-                        help="write keyframes for video tracks")
-    parser.add_argument("-t", "--indexing-mask", metavar="N", type=int,
-                        default=0,
-                        help="audio indexing mask (-1 for all)")
-    parser.add_argument("-d", "--decoding-mask", metavar="N", type=int,
-                        default=0,
-                        help="audio decoding mask (-1 for all)")
-    parser.add_argument("-a", "--audio-filename", metavar="NAME",
-                        default=ffms2.DEFAULT_AUDIO_FILENAME_FORMAT,
-                        help="audio filename format")
-    parser.add_argument("-s", "--error-handling", metavar="N", type=int,
-                        default=ffms2.FFMS_IEH_STOP_TRACK,
-                        help="audio decoding error handling")
-    parser.add_argument("--version", action="version",
-                        version="FFMS {}".format(ffms2.get_version()),
-                        help="show FFMS version number")
+    parser.add_argument(
+        "input_file", type=get_filename, help="input media filename"
+    )
+    parser.add_argument(
+        "output_file",
+        nargs="?",
+        type=get_filename,
+        help="output index filename",
+    )
+    parser.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="overwrite existing index file",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        default=0,
+        action="count",
+        help="FFmpeg verbosity level (can be repeated)",
+    )
+    parser.add_argument(
+        "-p",
+        "--disable-progress",
+        dest="progress",
+        action="store_false",
+        help="disable progress reporting",
+    )
+    parser.add_argument(
+        "-c",
+        "--timecodes",
+        action="store_true",
+        help="write timecodes for video tracks",
+    )
+    parser.add_argument(
+        "-k",
+        "--keyframes",
+        action="store_true",
+        help="write keyframes for video tracks",
+    )
+    parser.add_argument(
+        "-t",
+        "--indexing-mask",
+        metavar="N",
+        type=int,
+        default=0,
+        help="audio indexing mask (-1 for all)",
+    )
+    parser.add_argument(
+        "-d",
+        "--decoding-mask",
+        metavar="N",
+        type=int,
+        default=0,
+        help="audio decoding mask (-1 for all)",
+    )
+    parser.add_argument(
+        "-a",
+        "--audio-filename",
+        metavar="NAME",
+        default=ffms2.DEFAULT_AUDIO_FILENAME_FORMAT,
+        help="audio filename format",
+    )
+    parser.add_argument(
+        "-s",
+        "--error-handling",
+        metavar="N",
+        type=int,
+        default=ffms2.FFMS_IEH_STOP_TRACK,
+        help="audio decoding error handling",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="FFMS {}".format(ffms2.get_version()),
+        help="show FFMS version number",
+    )
     return parser.parse_args()
 
 
@@ -87,7 +129,7 @@ def main():
                 indexer.track_index_settings(
                     track.num,
                     track.num & args.indexing_mask,
-                    track.num & args.decoding_mask
+                    track.num & args.decoding_mask,
                 )
             ic = ffms2.init_progress_callback() if args.progress else None
             indexer.set_progress_callback(ic)

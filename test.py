@@ -19,11 +19,12 @@ class TestFFMS2(unittest.TestCase):
         (
             SourceInfo(
                 "CINT_Nik_H264_720_512kb.mp4", "mov,mp4,m4a,3gp,3g2,mj2"
-            ), [
+            ),
+            [
                 TrackInfo(ffms2.FFMS_TYPE_VIDEO, "h264"),
                 TrackInfo(ffms2.FFMS_TYPE_AUDIO, "aac"),
-            ]
-        ),
+            ],
+        )
     ]
 
     def test_samples(self):
