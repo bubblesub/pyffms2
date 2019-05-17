@@ -76,25 +76,14 @@ To install the package for Python 3, use::
 
   $ ./setup.py install
 
-To install the package for Python 2, use::
-
-  $ python2 setup.py install
-
-On Windows, you may use one of the MSI binary packages provided on the
-`download page <https://bitbucket.org/spirit/ffms/downloads>`_.
-
-
 Prerequisites
 -------------
 
-- `Python 3.2+ <http://www.python.org>`_ (or 2.7)
-- `FFmpegSource <http://code.google.com/p/ffmpegsource>`_
+- `Python 3.2+ <http://www.python.org>`_
+- `FFmpegSource <https://github.com/FFMS/ffms2>`_
 - `numpy <http://www.numpy.org>`_
-- `pywin32 <http://sourceforge.net/projects/pywin32>`_ (Windows only)
-- `lib3to2 <https://bitbucket.org/amentajo/lib3to2>`_
-  (if installing for Python 2)
 
 
 The API was designed to be an object-oriented and Pythonic version
 of the original `FFmpegSource API
-<http://ffmpegsource.googlecode.com/svn/trunk/doc/ffms2-api.html>`_.
+<https://github.com/FFMS/ffms2/blob/master/doc/ffms2-api.md>`_.
