@@ -8,7 +8,7 @@ setup(
     name="ffms2",
     version="0.4.2",
     description="Bindings for FFmpegSource",
-    long_description=(Path(__file__).parent / "README.rst").read_text(),
+    long_description=(Path(__file__).parent / "README.md").read_text(),
     long_description_content_type="text/markdown",
     url="https://github.com/rr-/pyffms2",
     classifiers=[
