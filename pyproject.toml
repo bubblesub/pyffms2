@@ -1,6 +1,5 @@
 [tool.black]
 line-length = 79
-py36 = true
 
 [tool.isort]
 multi_line_output = 3

@@ -2,6 +2,11 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
+install_packages = ["numpy"]
+
+if os.name == "nt":
+    install_packages.append("pypiwin32")
+
 setup(
     author="spirit",
     author_email="hiddenspirit@gmail.com",
@@ -21,5 +26,5 @@ setup(
     packages=find_packages(),
     package_dir={"ffms2": "ffms2"},
     package_data={"ffms2": ["ffms2/*.*"]},
-    install_requires=["numpy"],
+    install_requires=install_packages,
 )
