@@ -91,6 +91,7 @@ Prerequisites
 - [Python 3.2+](http://www.python.org)
 - [FFmpegSource](https://github.com/FFMS/ffms2)
 - [numpy](http://www.numpy.org)
+- [pywin32](http://sourceforge.net/projects/pywin32>`) (Windows only)
 
 The API was designed to be an object-oriented and Pythonic version of the
 original [FFmpegSource
