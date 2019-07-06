@@ -26,6 +26,6 @@ setup(
     python_requires=">=3.2",
     packages=find_packages(),
     package_dir={"ffms2": "ffms2"},
-    package_data={"ffms2": ["ffms2/*.*"]},
+    package_data={"ffms2": ["data/*"]},
     install_requires=install_packages,
 )

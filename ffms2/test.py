@@ -6,10 +6,12 @@ from pathlib import Path
 
 import ffms2
 
+ROOT_DIR = Path(__file__).parent
+
 
 class TestFFMS2(unittest.TestCase):
     def test_sample_video(self):
-        source_path = Path("test/CINT_Nik_H264_720_512kb.mp4")
+        source_path = Path(ROOT_DIR / "data/CINT_Nik_H264_720_512kb.mp4")
 
         indexer = ffms2.Indexer(source_path)
         self.assertEqual(indexer.format_name, "mov,mp4,m4a,3gp,3g2,mj2")
