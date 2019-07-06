@@ -1,49 +1,59 @@
 #!/usr/bin/env python3
-"""Test suite for ffms2
-"""
+"""Test suite for ffms2."""
 
-import os
 import unittest
-from collections import namedtuple
+from pathlib import Path
 
 import ffms2
 
 
 class TestFFMS2(unittest.TestCase):
-    SourceInfo = namedtuple("SourceInfo", ("file", "format_name"))
-    TrackInfo = namedtuple("TrackInfo", ("type", "codec_name"))
+    def test_sample_video(self):
+        source_path = Path("test/CINT_Nik_H264_720_512kb.mp4")
 
-    test_dir = "test"
+        indexer = ffms2.Indexer(source_path)
+        self.assertEqual(indexer.format_name, "mov,mp4,m4a,3gp,3g2,mj2")
 
-    tests = [
-        (
-            SourceInfo(
-                "CINT_Nik_H264_720_512kb.mp4", "mov,mp4,m4a,3gp,3g2,mj2"
-            ),
-            [
-                TrackInfo(ffms2.FFMS_TYPE_VIDEO, "h264"),
-                TrackInfo(ffms2.FFMS_TYPE_AUDIO, "aac"),
-            ],
-        )
-    ]
+        track_info_list = list(indexer.track_info_list)
+        for track_info in track_info_list:
+            indexer.track_index_settings(track_info.num, 1, 0)
 
-    def test_samples(self):
-        for source_info, track_info_list in self.tests:
-            source_path = os.path.join(self.test_dir, source_info.file)
-            indexer = ffms2.Indexer(source_path)
-            self.assertEqual(indexer.format_name, source_info.format_name)
-            index = ffms2.Index.make(source_path, -1)
+        self.assertEqual(track_info_list[0].codec_name, "h264")
+        self.assertEqual(track_info_list[1].codec_name, "aac")
 
-            for n, (type_, codec_name) in enumerate(indexer.track_info_list):
-                expected = track_info_list[n]
-                self.assertEqual(type_, expected.type)
-                self.assertEqual(codec_name, expected.codec_name)
-                if type_ == ffms2.FFMS_TYPE_VIDEO:
-                    source = ffms2.VideoSource(source_path, n, index)
-                    source.properties
-                elif type_ == ffms2.FFMS_TYPE_AUDIO:
-                    source = ffms2.AudioSource(source_path, n, index)
-                    source.properties
+        index = indexer.do_indexing2()
+
+        tracks = list(index.tracks)
+        self.assertEqual(tracks[0].type, ffms2.FFMS_TYPE_VIDEO)
+        self.assertEqual(tracks[1].type, ffms2.FFMS_TYPE_AUDIO)
+
+        video_source = ffms2.VideoSource(source_path, 0, index)
+        self.assertEqual(video_source.properties.ColorRange, 0)
+        self.assertEqual(video_source.properties.ColorSpace, 2)
+        self.assertEqual(video_source.properties.CropBottom, 0)
+        self.assertEqual(video_source.properties.CropLeft, 0)
+        self.assertEqual(video_source.properties.CropRight, 0)
+        self.assertEqual(video_source.properties.CropTop, 0)
+        self.assertEqual(video_source.properties.FPSNumerator, 24)
+        self.assertEqual(video_source.properties.FPSDenominator, 1)
+        self.assertEqual(video_source.properties.FirstTime, 0)
+        self.assertEqual(video_source.properties.LastTime, 1429 / 24)
+        self.assertEqual(video_source.properties.NumFrames, 1430)
+        self.assertEqual(video_source.properties.RFFNumerator, 24)
+        self.assertEqual(video_source.properties.RFFDenominator, 1)
+        self.assertEqual(video_source.properties.SARNum, 0)
+        self.assertEqual(video_source.properties.SARDen, 1)
+        self.assertEqual(video_source.properties.TopFieldFirst, 0)
+
+        audio_source = ffms2.AudioSource(source_path, 1, index)
+        self.assertEqual(audio_source.properties.BitsPerSample, 32)
+        self.assertEqual(audio_source.properties.ChannelLayout, 3)
+        self.assertEqual(audio_source.properties.Channels, 2)
+        self.assertEqual(audio_source.properties.FirstTime, 8 / 375)
+        self.assertEqual(audio_source.properties.LastTime, 22336 / 375)
+        self.assertEqual(audio_source.properties.NumSamples, 2860032)
+        self.assertEqual(audio_source.properties.SampleFormat, 3)
+        self.assertEqual(audio_source.properties.SampleRate, 48000)
 
 
 if __name__ == "__main__":
