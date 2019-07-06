@@ -177,7 +177,7 @@ if os.name == "nt":
         FILENAME_ENCODING = "utf-8"
 
         def get_encoded_path(path):
-            return path.encode(FILENAME_ENCODING)
+            return str(path).encode(FILENAME_ENCODING)
 
     else:
         import win32api  # @UnresolvedImport
@@ -185,6 +185,7 @@ if os.name == "nt":
         FILENAME_ENCODING = sys.getfilesystemencoding()
 
         def get_encoded_path(path):
+            path = str(path)
             if not os.path.exists(path):
                 with open(path, "w"):
                     pass
@@ -210,7 +211,7 @@ else:
     FILENAME_ENCODING = sys.getfilesystemencoding()
 
     def get_encoded_path(path):
-        return path.encode(FILENAME_ENCODING)
+        return str(path).encode(FILENAME_ENCODING)
 
     FFMS_Init(0, 0)
 
