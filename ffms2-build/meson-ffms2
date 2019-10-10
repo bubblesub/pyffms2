@@ -1,0 +1,5 @@
+meson build-windows \
+      -Ddefault_library=static \
+      --buildtype release \
+      --cross-file cross_mingw_x86_64.txt
+ninja -C build-windows
