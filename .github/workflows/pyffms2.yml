@@ -1,0 +1,33 @@
+name: pyffms2
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      FFMS2_DIR: ffms2-dir
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install setuptools
+      run: sudo pip3 install setuptools
+    - name: Install FFmpeg
+      run: |
+        sudo add-apt-repository ppa:jonathonf/ffmpeg-4
+        sudo apt-get install libavcodec-dev libavformat-dev libavdevice-dev
+    - name: Install ffms2
+      env:
+        LINK: https://github.com/FFMS/ffms2
+      run: |
+        git clone --depth 1 $LINK $FFMS2_DIR
+        cd $FFMS2_DIR
+        ./autogen.sh --prefix=$HOME/$FFMS2_DIR
+        make
+        make install
+    - name: Install pyffms2 and run tests
+      run: |
+        export LD_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib:$LD_LIBRARY_PATH
+        pip3 install .
+        python3 ffms2/test.py
