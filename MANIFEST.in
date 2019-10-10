@@ -1,0 +1,3 @@
+exclude ffms2.dll
+exclude ffms2.lib
+exclude ffmsindex.exe

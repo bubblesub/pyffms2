@@ -1,12 +1,17 @@
 import os
+import sys
 from pathlib import Path
 
 from setuptools import find_packages, setup
 
 install_packages = ["numpy"]
-
 if os.name == "nt":
     install_packages.append("pypiwin32")
+
+data_libs = []
+
+if set(["bdist_wheel", "--plat-name", "win_amd64"]) <= set(sys.argv):
+    data_libs = [("Scripts", ["ffms2.dll", "ffms2.lib", "ffmsindex.exe"])]
 
 setup(
     author="spirit",
@@ -23,6 +28,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
     ],
+    data_files=data_libs,
     python_requires=">=3.2",
     packages=find_packages(),
     package_dir={"ffms2": "ffms2"},
