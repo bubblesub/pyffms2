@@ -21,7 +21,7 @@ setup(
     description="Bindings for FFmpegSource",
     long_description=(Path(__file__).parent / "README.md").read_text(),
     long_description_content_type="text/markdown",
-    url="https://github.com/rr-/pyffms2",
+    url="https://github.com/bubblesub/pyffms2",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
