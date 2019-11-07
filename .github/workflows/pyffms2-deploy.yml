@@ -1,13 +1,15 @@
 name: pyffms2-deploy
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - '*.*.*'
 
 jobs:
   create-binaries:
 
     runs-on: ubuntu-latest
+
     env:
       DAV1D_DIR: dav1d-dir
       OGG_DIR: ogg-dir
@@ -182,8 +184,13 @@ jobs:
 
   create-lib:
     needs: create-binaries
+
     runs-on: windows-latest
+
     steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+
     - name: Download the zip
       uses: actions/download-artifact@v1
       with:
@@ -206,24 +213,9 @@ jobs:
         lib /def:ffms2.def /machine:x64 /out:ffms2.lib
         7z a ffms2.zip ffms2.dll ffmsindex.exe ffms2.lib
 
-    - name: Upload the zip
-      uses: actions/upload-artifact@v1
+    - name: Create a Release
+      uses: softprops/action-gh-release@v1
       with:
-        name: ffms2
-        path: ffms2/ffms2.zip
-
-  deploy:
-    needs: create-lib
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download complete binaries
-      uses: actions/download-artifact@v1
-      with:
-        name: ffms2
-
-    - name: Upload the binaries
-      uses: skx/github-action-publish-binaries@master
+        files: ffms2/ffms2.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        args: 'ffms2/ffms2.zip'
