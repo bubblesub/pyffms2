@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument(
         "--version",
         action="version",
-        version="FFMS {}".format(ffms.get_version()),
+        version="FFMS {}".format(ffms2.get_version()),
         help="show FFMS version number",
     )
     return parser.parse_args()
@@ -41,7 +41,8 @@ def parse_args():
 
 def create_index(indexer, write_index=True, progress=True, msg="Indexing…"):
     ic = ffms2.init_progress_callback(msg) if progress else None
-    index = indexer.do_indexing(-1, ic=ic)
+    indexer.set_progress_callback(ic)
+    index = indexer.do_indexing2()
     if ic:
         ic.done()
     if write_index:
@@ -93,7 +94,7 @@ def main():
 
             print("format =", format_name)
 
-            for n, (type_, codec_name) in enumerate(track_info_list):
+            for (n, type_, codec_name) in track_info_list:
                 type_name = (
                     TYPES[type_] if 0 <= type_ < len(TYPES) else "unknown"
                 )

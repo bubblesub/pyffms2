@@ -26,8 +26,19 @@ jobs:
         ./autogen.sh --prefix=$HOME/$FFMS2_DIR
         make
         make install
-    - name: Install pyffms2 and run tests
+    - name: Install pyffms2
       run: |
         export LD_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib:$LD_LIBRARY_PATH
         pip3 install .
+    - name: Run tests
+      run: |
+        export LD_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib:$LD_LIBRARY_PATH
         python3 ffms2/test.py
+    - name: Run ffmsindex
+      run: |
+        export LD_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib:$LD_LIBRARY_PATH
+        python3 ffms2/__main__.py "ffms2/data/morning rescue.mkv"
+    - name: Run ffmsinfo
+      run: |
+        export LD_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib:$LD_LIBRARY_PATH
+        python3 ffmsinfo.py "ffms2/data/morning rescue.mkv"
