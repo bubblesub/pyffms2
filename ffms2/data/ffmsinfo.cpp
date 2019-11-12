@@ -69,8 +69,10 @@ int main(int argc, char **argv) {
     VP = FFMS_GetVideoProperties(video_source);
 
     printf("\n\nVideo properties\n\n");
-    printf("\tFPS = %f\n",
-           (VP->FPSNumerator / static_cast<double>(VP->FPSDenominator)));
+    printf(
+        "\tFPS = %f\n",
+        (VP->FPSNumerator / static_cast<double>(VP->FPSDenominator))
+    );
     printf("\tDuration = %f\n", VP->LastTime);
     printf("\tNum Frames = %d\n\n", VP->NumFrames);
 
