@@ -62,11 +62,12 @@ def main():
 
         try:
             indexer = ffms2.Indexer(source_file)
+            for track_info in indexer.track_info_list:
+                indexer.track_index_settings(track_info.num, 1, 0)
         except ffms2.Error as e:
-            print(e)
+            print(e, file=sys.stderr)
         else:
             format_name = indexer.format_name
-            # source_type = indexer.source_type
             track_info_list = indexer.track_info_list
             index_file = source_file + ffms2.FFINDEX_EXT
 
@@ -98,8 +99,6 @@ def main():
                 type_name = (
                     TYPES[type_] if 0 <= type_ < len(TYPES) else "unknown"
                 )
-                # track = index.tracks[n]
-                # time_base = track.time_base
                 print("{}:".format(n))
                 print("\ttype =", type_name)
                 print("\tcodec =", codec_name)
@@ -139,7 +138,7 @@ def main():
                         else "unknown"
                     )
                     print("\tsample rate =", aprops.SampleRate),
-                    # print("\tbits per sample =", aprops.BitsPerSample)
+                    print("\tbits per sample =", aprops.BitsPerSample)
                     print("\tsample format =", sample_format_name)
                     print("\tnum channels =", aprops.Channels)
                     print("\tduration =", aprops.LastTime)

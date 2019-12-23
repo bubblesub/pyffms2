@@ -48,6 +48,10 @@ int main(int argc, char **argv) {
     indexer = FFMS_CreateIndexer(fileName.c_str(), &E);
     NULL_CHECK(indexer);
 
+    for (int track = 0; track < FFMS_GetNumTracksI(indexer); track++) {
+        FFMS_TrackIndexSettings(indexer, track, 1, 0);
+    }
+
     index = FFMS_DoIndexing2(indexer, 0, &E);
     NULL_CHECK(index);
 
