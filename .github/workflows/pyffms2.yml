@@ -30,15 +30,15 @@ jobs:
     - name: Install pyffms2
       run: |
         pip3 install .
-    - name: Run tests
-      run: |
-        python3 ffms2/test.py
     - name: Run C-test
       run: |
         cd ffms2/data
         g++ -std=c++11 -o ffmsinfo ffmsinfo.cpp \
             -I$HOME/$FFMS2_DIR/include -L$HOME/$FFMS2_DIR/lib -lffms2
         ./ffmsinfo
+    - name: Run tests
+      run: |
+        python3 ffms2/test.py
     - name: Run ffmsindex
       run: |
         python3 ffms2/__main__.py "ffms2/data/morning rescue.mkv"
