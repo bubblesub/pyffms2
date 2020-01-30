@@ -1,4 +1,4 @@
-name: pyffms2-deploy
+name: deploy-windows
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - '*.*.*'
 
 jobs:
+
   create-binaries:
 
     runs-on: ubuntu-latest
@@ -31,8 +32,13 @@ jobs:
         echo "1"| sudo update-alternatives --config x86_64-w64-mingw32-gcc
         echo "1"| sudo update-alternatives --config x86_64-w64-mingw32-g++
 
-    - name: Install nasm and yasm
-      run: sudo apt-get install nasm yasm
+    - name: Install nasm
+      env:
+        LINK: http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm
+        NASM_VERSION: 2.14.02-1
+      run: |
+        curl -LO $LINK/nasm_${NASM_VERSION}_amd64.deb
+        sudo dpkg -i nasm_${NASM_VERSION}_amd64.deb
 
     - name: Install Python3 packages
       env:
@@ -182,7 +188,7 @@ jobs:
         name: ffms2
         path: ffms2.zip
 
-  create-lib:
+  deploy-binaries:
     needs: create-binaries
 
     runs-on: windows-latest
@@ -196,12 +202,21 @@ jobs:
       with:
         name: ffms2
 
+    - name: Set VS environment variables
+      run: |
+        $VsPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer"
+        echo "::add-path::$VsPath"
+
+    - name: Set MSVC x86_64 linker path
+      run: |
+        $LinkGlob = "VC\Tools\MSVC\*\bin\Hostx64\x64"
+        $LinkPath = vswhere -latest -products * -find "$LinkGlob" |
+                    Select-Object -Last 1
+        echo "::add-path::$LinkPath"
+
     - name: Create the lib
-      env:
-        VS_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
       shell: cmd
       run: |
-        set PATH=%VS_PATH%\VC\Tools\MSVC\14.23.28105\bin\Hostx64\x64;%PATH%
         cd ffms2
         7z x ffms2.zip
         del /f ffms2.zip
@@ -213,9 +228,33 @@ jobs:
         lib /def:ffms2.def /machine:x64 /out:ffms2.lib
         7z a ffms2.zip ffms2.dll ffmsindex.exe ffms2.lib
 
+    - name: Install Python 3.7 version
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+        architecture: 'x64'
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel
+
+    - name: Create Python wheel
+      run: |
+        Move-Item -Path "ffms2\*" -Destination "."
+        python setup.py bdist_wheel --plat-name win_amd64 --python-tag cp37
+
+    - name: Get the package version
+      id: data
+      run: |
+        $VERSION = python setup.py --version | Out-String
+        echo "::set-output name=version::$VERSION"
+
     - name: Create a Release
       uses: softprops/action-gh-release@v1
       with:
-        files: ffms2/ffms2.zip
+        files: |
+          ffms2.zip
+          dist/ffms2-${{ steps.data.outputs.version }}-cp37-none-win_amd64.whl
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
