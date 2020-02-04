@@ -25,7 +25,8 @@ jobs:
       env:
         BASE_PKGS: mingw-w64 mingw-w64-x86-64-dev binutils-mingw-w64
         OTHER_PKGS: mingw-w64-common mingw-w64-tools libz-mingw-w64-dev
-      run: sudo apt-get install $BASE_PKGS $OTHER_PKGS
+      run: |
+        sudo apt-get install $BASE_PKGS $OTHER_PKGS
 
     - name: Run threads on mingw
       run: |
@@ -214,7 +215,7 @@ jobs:
                     Select-Object -Last 1
         echo "::add-path::$LinkPath"
 
-    - name: Create the lib
+    - name: Create the ffms2 zip
       shell: cmd
       run: |
         cd ffms2
