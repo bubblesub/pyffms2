@@ -17,7 +17,7 @@ setup(
     author="spirit",
     author_email="hiddenspirit@gmail.com",
     name="ffms2",
-    version="0.4.4",
+    version="0.4.5",
     description="Bindings for FFmpegSource",
     long_description=(Path(__file__).parent / "README.md").read_text(),
     long_description_content_type="text/markdown",
