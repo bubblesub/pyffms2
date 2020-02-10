@@ -19,7 +19,8 @@ jobs:
       FFMPEG_DIR: ffmpeg-dir
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout
+      uses: actions/checkout@v2
 
     - name: Install mingw
       env:
@@ -186,7 +187,7 @@ jobs:
     - name: Upload binaries
       uses: actions/upload-artifact@v1
       with:
-        name: ffms2
+        name: ffms2-binaries
         path: ffms2.zip
 
   deploy-binaries:
@@ -196,12 +197,12 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     - name: Download the zip
       uses: actions/download-artifact@v1
       with:
-        name: ffms2
+        name: ffms2-binaries
 
     - name: Set VS environment variables
       run: |
@@ -218,7 +219,7 @@ jobs:
     - name: Create the ffms2 zip
       shell: cmd
       run: |
-        cd ffms2
+        cd ffms2-binaries
         7z x ffms2.zip
         del /f ffms2.zip
         dumpbin /EXPORTS ffms2.dll > ffms2.txt
@@ -242,7 +243,7 @@ jobs:
 
     - name: Create Python wheel
       run: |
-        Move-Item -Path "ffms2\*" -Destination "."
+        Move-Item -Path "ffms2-binaries\*" -Destination "."
         python setup.py bdist_wheel --plat-name win_amd64 --python-tag cp37
 
     - name: Get the package version
