@@ -4,6 +4,7 @@
 import argparse
 import os
 import sys
+import time
 from collections import OrderedDict
 
 import ffms2.console_mode  # @UnusedImport
@@ -20,19 +21,40 @@ AV_LOGS = [
 ]
 
 
+def init_progress_callback(
+    msg="Indexing...", time_threshold=1, check_time=0.2
+):
+    def ic(current, total, private=None):
+        pct = current * 100 // total
+        if ic.show_pct:
+            if pct > ic.pct:
+                ic.pct = pct
+                print("\r{} {:d}%".format(msg, pct))
+        elif time.time() - start_time >= check_time and pct < pct_threshold:
+            ic.show_pct = True
+        return 0
+
+    def done():
+        ic(1, 1)
+        print()
+
+    print(msg)
+    ic.done = done
+    ic.pct = -1
+    ic.show_pct = True
+    pct_threshold = int(check_time * 100 / time_threshold)
+    start_time = time.time()
+    return ic
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description=__doc__.strip(),
         prog="{} -m {}".format(os.path.basename(sys.executable), "ffms2"),
     )
+    parser.add_argument("input_file", type=str, help="input media filename")
     parser.add_argument(
-        "input_file", type=get_filename, help="input media filename"
-    )
-    parser.add_argument(
-        "output_file",
-        nargs="?",
-        type=get_filename,
-        help="output index filename",
+        "output_file", nargs="?", type=str, help="output index filename",
     )
     parser.add_argument(
         "-f",
@@ -106,13 +128,6 @@ def parse_args():
     return parser.parse_args()
 
 
-# For Python 2
-def get_filename(filename):
-    if not isinstance(filename, str):
-        filename = filename.decode(sys.stdin.encoding)
-    return filename
-
-
 def main():
     args = parse_args()
     output_file = args.output_file or args.input_file + ffms2.FFINDEX_EXT
@@ -131,22 +146,22 @@ def main():
                     track.num & args.indexing_mask,
                     track.num & args.decoding_mask,
                 )
-            ic = ffms2.init_progress_callback() if args.progress else None
+            ic = init_progress_callback() if args.progress else None
             indexer.set_progress_callback(ic)
             index = indexer.do_indexing2(error_handling=args.error_handling)
             if ic:
                 ic.done()
-            stdout_write("Writing index…\n")
+            stdout_write("Writing index...\n")
             index.write(output_file)
 
         if args.timecodes:
-            stdout_write("Writing timecodes…\n")
+            stdout_write("Writing timecodes...\n")
             for track in index.tracks:
                 if track.type == ffms2.FFMS_TYPE_VIDEO:
                     track.write_timecodes()
 
         if args.keyframes:
-            stdout_write("Writing keyframes…\n")
+            stdout_write("Writing keyframes...\n")
             for track in index.tracks:
                 if track.type == ffms2.FFMS_TYPE_VIDEO:
                     track.write_keyframes()

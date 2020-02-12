@@ -21,7 +21,6 @@ import functools
 import math
 import os
 import sys
-import time
 from collections import namedtuple
 from ctypes import *
 from fractions import Fraction
@@ -322,6 +321,7 @@ class Indexer:
             raise Error
         self.source_file = source_file
         self._track_info_list = None
+        self._ic = None
 
     def __del__(self):
         if self._indexer:
@@ -361,8 +361,10 @@ class Indexer:
 
     def set_progress_callback(self, ic, ic_private=None):
         self._check_indexer()
-        ic = TIndexCallback(ic) if ic else cast(ic, TIndexCallback)
-        FFMS_SetProgressCallback(self._indexer, ic, cast(ic_private, c_void_p))
+        self._ic = TIndexCallback(ic) if ic else cast(ic, TIndexCallback)
+        FFMS_SetProgressCallback(
+            self._indexer, self._ic, cast(ic_private, c_void_p)
+        )
 
     def do_indexing2(self, error_handling=FFMS_IEH_STOP_TRACK):
         """Index the file.
@@ -1069,32 +1071,3 @@ def list_to_mask(l):
 
 def mask_to_list(m, num_bits=64):
     return [n for n in range(num_bits) if m & 1 << n]
-
-
-def init_progress_callback(msg="Indexing…", time_threshold=1, check_time=0.2):
-    """Initialize and return a progress callback for the text terminal.
-    """
-
-    def ic(current, total, private=None):
-        pct = current * 100 // total
-        if ic.show_pct:
-            if pct > ic.pct:
-                ic.pct = pct
-                sys.stdout.write("\r{} {:d}%".format(msg, pct))
-                sys.stdout.flush()
-        elif time.time() - start_time >= check_time and pct < pct_threshold:
-            ic.show_pct = True
-        return 0
-
-    def done():
-        ic(1, 1)
-        print()
-
-    sys.stdout.write(msg)
-    sys.stdout.flush()
-    ic.done = done
-    ic.pct = -1
-    ic.show_pct = False
-    pct_threshold = int(check_time * 100 / time_threshold)
-    start_time = time.time()
-    return ic
