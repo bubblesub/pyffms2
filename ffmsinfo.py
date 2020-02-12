@@ -5,12 +5,39 @@
 import argparse
 import os
 import sys
+import time
 
 import ffms2.console_mode  # @UnusedImport
 
 AUDIO_FORMATS = ["8-bit", "16-bit", "32-bit", "float", "double"]
 
 TYPES = ["video", "audio", "data", "subtitles", "attachment"]
+
+
+def init_progress_callback(
+    msg="Indexing...", time_threshold=1, check_time=0.2
+):
+    def ic(current, total, private=None):
+        pct = current * 100 // total
+        if ic.show_pct:
+            if pct > ic.pct:
+                ic.pct = pct
+                print("\r{} {:d}%".format(msg, pct))
+        elif time.time() - start_time >= check_time and pct < pct_threshold:
+            ic.show_pct = True
+        return 0
+
+    def done():
+        ic(1, 1)
+        print()
+
+    print(msg)
+    ic.done = done
+    ic.pct = -1
+    ic.show_pct = True
+    pct_threshold = int(check_time * 100 / time_threshold)
+    start_time = time.time()
+    return ic
 
 
 def parse_args():
@@ -40,7 +67,7 @@ def parse_args():
 
 
 def create_index(indexer, write_index=True, progress=True, msg="Indexing…"):
-    ic = ffms2.init_progress_callback(msg) if progress else None
+    ic = init_progress_callback(msg) if progress else None
     indexer.set_progress_callback(ic)
     index = indexer.do_indexing2()
     if ic:
@@ -88,7 +115,10 @@ def main():
                             break
                 if recreate_index:
                     index = create_index(
-                        indexer, args.write_index, args.progress, "Reindexing…"
+                        indexer,
+                        args.write_index,
+                        args.progress,
+                        "Reindexing...",
                     )
             else:
                 index = create_index(indexer, args.write_index, args.progress)
