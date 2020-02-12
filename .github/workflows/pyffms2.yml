@@ -58,3 +58,44 @@ jobs:
     - name: Run ffmsinfo
       run: |
         python3 ffmsinfo.py "ffms2/data/morning rescue.mkv"
+
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2.0.0
+      with:
+        fetch: 1
+
+    - name: Install Python 3.7 version
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+        architecture: 'x64'
+
+    - name: Install setuptools
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools
+
+    - name: Install pyffms2
+      run: |
+        $VERS = "0.4.5"
+        $LINK = "https://github.com/bubblesub/pyffms2/releases/download/$VERS"
+        $PKG = "ffms2.zip"
+        curl -LO "$LINK/$PKG"
+        7z x $PKG
+        pip install .
+
+    - name: Run tests
+      run: |
+        python ffms2/test.py
+
+    - name: Run ffmsindex
+      run: |
+        python ffms2/__main__.py "ffms2/data/morning rescue.mkv"
+
+    - name: Run ffmsinfo
+      run: |
+        python ffmsinfo.py "ffms2/data/morning rescue.mkv"

@@ -8,10 +8,13 @@ install_packages = ["numpy"]
 if os.name == "nt":
     install_packages.append("pypiwin32")
 
+libs = ["ffms2.dll", "ffms2.lib", "ffmsindex.exe"]
 data_libs = []
 
-if set(["bdist_wheel", "--plat-name", "win_amd64"]) <= set(sys.argv):
-    data_libs = [("Scripts", ["ffms2.dll", "ffms2.lib", "ffmsindex.exe"])]
+if set(["bdist_wheel", "--plat-name", "win_amd64"]) <= set(sys.argv) or (
+    os.name == "nt" and all([os.path.exists(f) for f in libs])
+):
+    data_libs = [("Scripts", libs)]
 
 setup(
     author="spirit",
