@@ -6,39 +6,54 @@ jobs:
 
   build-unix:
 
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+         os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
 
     env:
       FFMS2_DIR: ffms2-dir
 
     steps:
-    - uses: actions/checkout@v2.0.0
+    - uses: actions/checkout@v2
       with:
         fetch: 1
 
-    - name: Install setuptools
-      run: |
-        sudo pip3 install setuptools
+    - name: Install Python 3.7 version
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+        architecture: 'x64'
 
-    - name: Install FFmpeg
+    - name: Install MacOS dependencies
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install pkg-config automake
+
+    - name: Install FFmpeg on Ubuntu
+      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo add-apt-repository ppa:jonathonf/ffmpeg-4
         sudo apt-get install libavcodec-dev libavformat-dev libavdevice-dev
+
+    - name: Install FFmpeg on MacOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install ffmpeg
 
     - name: Install ffms2
       env:
         LINK: https://github.com/FFMS/ffms2
       run: |
-        echo "::set-env name=LD_LIBRARY_PATH::$HOME/$FFMS2_DIR/lib"
         git clone --depth 1 $LINK $FFMS2_DIR
         cd $FFMS2_DIR
         ./autogen.sh --prefix=$HOME/$FFMS2_DIR
-        make
-        make install
+        make -j4 install
 
-    - name: Install pyffms2
+    - name: Set environment variables
       run: |
-        pip3 install .
+        echo "::set-env name=LD_LIBRARY_PATH::$HOME/$FFMS2_DIR/lib"
 
     - name: Run C-test
       run: |
@@ -47,17 +62,29 @@ jobs:
             -I$HOME/$FFMS2_DIR/include -L$HOME/$FFMS2_DIR/lib -lffms2
         ./ffmsinfo
 
+    - name: Install setuptools
+      run: |
+        pip install setuptools
+
+    - name: Install pyffms2
+      run: |
+        pip install .
+
     - name: Run tests
       run: |
-        python3 ffms2/test.py
+        export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
+        python ffms2/test.py
 
     - name: Run ffmsindex
       run: |
-        python3 ffms2/__main__.py "ffms2/data/morning rescue.mkv"
+        export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
+        python ffms2/__main__.py "ffms2/data/morning rescue.mkv"
 
     - name: Run ffmsinfo
       run: |
-        python3 ffmsinfo.py "ffms2/data/morning rescue.mkv"
+        export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
+        python ffmsinfo.py "ffms2/data/morning rescue.mkv"
+
 
   build-windows:
 
