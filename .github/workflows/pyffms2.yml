@@ -31,16 +31,16 @@ jobs:
       run: |
         brew install pkg-config automake
 
-    - name: Install FFmpeg on Ubuntu
-      if: matrix.os == 'ubuntu-latest'
+    - name: Install FFmpeg
       run: |
-        sudo add-apt-repository ppa:jonathonf/ffmpeg-4
-        sudo apt-get install libavcodec-dev libavformat-dev libavdevice-dev
-
-    - name: Install FFmpeg on MacOS
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install ffmpeg
+        PLATFORM=${{ matrix.os }}
+        if [ ${PLATFORM} = "ubuntu-latest" ]
+        then
+            sudo add-apt-repository ppa:jonathonf/ffmpeg-4
+            sudo apt-get install libavcodec-dev libavformat-dev libavdevice-dev
+        else
+            brew install ffmpeg
+        fi
 
     - name: Install ffms2
       env:
