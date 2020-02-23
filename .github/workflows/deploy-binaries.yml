@@ -264,9 +264,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
 
-    - name: Build Linux wheel
+    - name: Release source code on Linux
       run: |
-        python setup.py bdist_wheel --plat-name linux_x86_64 --python-tag cp37
+        python setup.py sdist
 
     - name: Build Windows wheel
       run: |
