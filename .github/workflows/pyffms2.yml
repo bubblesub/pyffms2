@@ -108,7 +108,7 @@ jobs:
 
     - name: Install pyffms2
       run: |
-        $VERS = "0.4.5"
+        $VERS = "0.4.5.2"
         $LINK = "https://github.com/bubblesub/pyffms2/releases/download/$VERS"
         $PKG = "ffms2.zip"
         curl -LO "$LINK/$PKG"
