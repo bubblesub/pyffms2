@@ -42,7 +42,7 @@ class TestFFMS2(unittest.TestCase):
         self.assertEqual(video_source.properties.LastTime, 3739 / 250)
         self.assertEqual(video_source.properties.NumFrames, 359)
         self.assertEqual(video_source.properties.RFFNumerator, 1)
-        self.assertEqual(video_source.properties.RFFDenominator,0)
+        self.assertEqual(video_source.properties.RFFDenominator, 0)
         self.assertEqual(video_source.properties.SARNum, 0)
         self.assertEqual(video_source.properties.SARDen, 1)
         self.assertEqual(video_source.properties.TopFieldFirst, 0)
