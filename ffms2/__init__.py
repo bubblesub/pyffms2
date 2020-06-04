@@ -166,9 +166,6 @@ PIX_FMT_NONE = FFMS_GetPixFmt(b"none")
 
 
 if os.name == "nt":
-    import atexit
-    import pythoncom  # @UnresolvedImport
-
     # http://code.google.com/p/ffmpegsource/issues/detail?id=58
     USE_UTF8_PATHS = True
 
@@ -205,7 +202,13 @@ if os.name == "nt":
         pythoncom.CoUninitialize()
         pythoncom._initialized = False
 
-    ffms_init()
+    if "[GCC" in sys.version: # pypiwin32 now not compatible with MINGW
+        FFMS_Init(0, USE_UTF8_PATHS)
+    else:
+        import atexit 
+        import pythoncom  # @UnresolvedImport
+        
+        ffms_init()
 else:
     FILENAME_ENCODING = sys.getfilesystemencoding()
 
