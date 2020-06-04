@@ -86,7 +86,7 @@ if os.name == "nt":
         except NameError:
             script_dirs = []
         script_dirs.append(absdir(sys.argv[0]))
-        if "[GCC" in sys.version: # `pacman -S ${MINGW_PACKAGE_PREFIX}-ffms2` place libffms2-?.dll to /bin
+        if "[GCC" in sys.version: # in MINGW ffms2.dll with name libffms2-?.dll located in /bin
             script_dirs.append(absdir(sys.executable))
             win_formats+=["lib{}%s.dll"%(x or "") for x in range(0, -9, -1)]
         for win_format in win_formats:
