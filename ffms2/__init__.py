@@ -203,7 +203,7 @@ if os.name == "nt":
         pythoncom.CoUninitialize()
         pythoncom._initialized = False
 
-    if "[GCC" in sys.version: # pypiwin32 now not compatible with MINGW
+    if "[GCC" in sys.version: # pythoncom is part of pypiwin32 which cannot be installed on MINGW
         FFMS_Init(0, USE_UTF8_PATHS)
     else:
         import atexit 
