@@ -5,7 +5,7 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 install_packages = ["numpy"]
-if os.name == "nt":
+if os.name == "nt" and "[GCC" not in sys.version: # pypiwin32 now not compatible with MINGW 
     install_packages.append("pypiwin32")
 
 libs = ["ffms2.dll", "ffms2.lib", "ffmsindex.exe"]
