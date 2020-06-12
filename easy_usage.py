@@ -15,6 +15,7 @@ def main():
     now = time.time()
     vs = ffms2.VideoSource(source_path)
     if vs.index.index_file:
+        delay = time.time() - now
         if (
             delay > ACCEPTABLE_DELAY
         ):  # If opening a file has a delay greater than ACCEPTABLE_DELAY, create an index file
