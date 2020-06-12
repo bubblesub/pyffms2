@@ -15,6 +15,13 @@ def main():
     now = time.time()
     vs = ffms2.VideoSource(source_path)
     if vs.index.index_file:
+        print(
+            f"The first time you open `{source_path}` ffms2 wrote the index file `{vs.index.index_file}`"
+        )
+        print(
+            f"since without it the opening delay was greater then `{ACCEPTABLE_DELAY}`"
+        )
+    else:
         delay = time.time() - now
         if (
             delay > ACCEPTABLE_DELAY
