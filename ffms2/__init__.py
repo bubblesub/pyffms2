@@ -189,7 +189,7 @@ if os.name == "nt":
             return win32api.GetShortPathName(path).encode(FILENAME_ENCODING)
 
     def ffms_init():
-        if "[GCC" in sys.version:
+        if "[GCC" not in sys.version:
             import atexit
             import pythoncom
 
