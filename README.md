@@ -78,6 +78,8 @@ Audio stuff:
 
 `ffmsinfo.py` is a demo script showing how this package can be used.
 
+`easy_usage.py` is a demo script showing how write the index file to speed up access to the media file.
+
 Installation
 ------------
 
