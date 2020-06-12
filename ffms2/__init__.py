@@ -189,27 +189,27 @@ if os.name == "nt":
             return win32api.GetShortPathName(path).encode(FILENAME_ENCODING)
 
     def ffms_init():
-        if not getattr(pythoncom, "_initialized", False):
-            try:
-                pythoncom.CoInitializeEx(pythoncom.COINIT_MULTITHREADED)
-            except pythoncom.error:
-                pass
-            else:
-                pythoncom._initialized = True
-                atexit.register(ffms_uninit)
+        if "[GCC" in sys.version:
+            import atexit
+            import pythoncom
+
+            if not getattr(pythoncom, "_initialized", False):
+                try:
+                    pythoncom.CoInitializeEx(pythoncom.COINIT_MULTITHREADED)
+                except pythoncom.error:
+                    pass
+                else:
+                    pythoncom._initialized = True
+                    atexit.register(ffms_uninit)
         FFMS_Init(0, USE_UTF8_PATHS)
 
     def ffms_uninit():
         pythoncom.CoUninitialize()
         pythoncom._initialized = False
 
-    if "[GCC" in sys.version:
-        FFMS_Init(0, USE_UTF8_PATHS)
-    else:
-        import atexit
-        import pythoncom  # @UnresolvedImport
+    ffms_init()
 
-        ffms_init()
+
 else:
     FILENAME_ENCODING = sys.getfilesystemencoding()
 
