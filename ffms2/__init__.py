@@ -204,6 +204,8 @@ if os.name == "nt":
         FFMS_Init(0, USE_UTF8_PATHS)
 
     def ffms_uninit():
+        import pythoncom
+        
         pythoncom.CoUninitialize()
         pythoncom._initialized = False
 
