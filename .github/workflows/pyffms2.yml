@@ -85,7 +85,12 @@ jobs:
         export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
         python ffmsinfo.py "ffms2/data/morning rescue.mkv"
 
-
+    - name: Run easy_usage
+      run: |
+        export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
+        python easy_usage.py
+        
+        
   build-windows:
 
     runs-on: windows-latest
@@ -126,3 +131,7 @@ jobs:
     - name: Run ffmsinfo
       run: |
         python ffmsinfo.py "ffms2/data/morning rescue.mkv"
+        
+    - name: Run easy_usage
+      run: |
+        python easy_usage.py
