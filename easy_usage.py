@@ -4,6 +4,7 @@
 import os
 import sys
 import time
+
 import ffms2.console_mode
 
 ROOT_DIR = os.path.dirname(sys.argv[0])

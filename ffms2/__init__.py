@@ -205,7 +205,7 @@ if os.name == "nt":
 
     def ffms_uninit():
         import pythoncom
-        
+
         pythoncom.CoUninitialize()
         pythoncom._initialized = False
 
