@@ -92,7 +92,7 @@ $ ./setup.py install
 Prerequisites
 -------------
 
-- [Python 3.2+](http://www.python.org)
+- [Python 3.7+](http://www.python.org)
 - [FFmpegSource](https://github.com/FFMS/ffms2)
 - [numpy](http://www.numpy.org)
 - [pywin32](http://sourceforge.net/projects/pywin32>`) (Windows only)
