@@ -100,3 +100,9 @@ Prerequisites
 The API was designed to be an object-oriented and Pythonic version of the
 original [FFmpegSource
 API](https://github.com/FFMS/ffms2/blob/master/doc/ffms2-api.md).
+
+Development
+-----------
+
+Thanks to GitHub actions, releasing a new version is only a matter of creating
+a tag on the newest master.
