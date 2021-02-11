@@ -37,12 +37,7 @@ jobs:
         echo "1"| sudo update-alternatives --config x86_64-w64-mingw32-g++
 
     - name: Install nasm
-      env:
-        LINK: http://debian-archive.trafficmanager.net/debian/pool/main/n/nasm
-        NASM_VERSION: 2.15.05-1
-      run: |
-        curl -LO $LINK/nasm_${NASM_VERSION}_amd64.deb
-        sudo dpkg -i nasm_${NASM_VERSION}_amd64.deb
+      uses: ilammy/setup-nasm@v1
 
     - name: Install Python3 packages
       env:
