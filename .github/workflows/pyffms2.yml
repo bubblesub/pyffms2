@@ -16,9 +16,7 @@ jobs:
       FFMS2_DIR: ffms2-dir
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch: 1
+    - uses: actions/checkout@v3
 
     - name: Install Python 3.7 version
       uses: actions/setup-python@v1
@@ -36,7 +34,6 @@ jobs:
         PLATFORM=${{ matrix.os }}
         if [ ${PLATFORM} = "ubuntu-latest" ]
         then
-            sudo add-apt-repository ppa:jonathonf/ffmpeg-4
             sudo apt-get install libavcodec-dev libavformat-dev libavdevice-dev
         else
             brew install ffmpeg
@@ -95,9 +92,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2.0.0
-      with:
-        fetch: 1
+    - uses: actions/checkout@v3
 
     - name: Install Python 3.7 version
       uses: actions/setup-python@v1
@@ -112,7 +107,7 @@ jobs:
 
     - name: Install pyffms2
       run: |
-        $VERS = "0.4.5.2"
+        $VERS = "0.4.5.5"
         $LINK = "https://github.com/bubblesub/pyffms2/releases/download/$VERS"
         $PKG = "ffms2.zip"
         curl -LO "$LINK/$PKG"
