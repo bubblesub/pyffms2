@@ -37,6 +37,6 @@ setup(
     python_requires=">=3.7",
     packages=find_packages(),
     package_dir={"ffms2": "ffms2"},
-    package_data={"ffms2": ["data/*", "../COPYING", "../COPYING.LESSER"]},
+    package_data={"ffms2": ["data/*", "../COPYING.LESSER"]},
     install_requires=install_packages,
 )
