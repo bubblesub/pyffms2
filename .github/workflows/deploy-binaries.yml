@@ -56,7 +56,6 @@ jobs:
               -Ddefault_library=static \
               -Denable_tools=false \
               -Denable_tests=false \
-              -Dtestdata_tools=false \
               -Dprefix=$HOME/$DAV1D_DIR \
               --buildtype release \
               --cross-file cross_mingw_x86_64.txt
@@ -134,14 +133,17 @@ jobs:
         make -j12
         make install
 
+    - name: Set environment variables
+      run: |
+        echo "{PKG_CONFIG_PATH}={$HOME/$OGG_DIR/lib/pkgconfig}" >> $GITHUB_ENV
+        echo "{PKG_CONFIG_PATH}={$HOME/$VORBIS_DIR/lib/pkgconfig}" >> $GITHUB_ENV
+        echo "{PKG_CONFIG_PATH}={$HOME/$DAV1D_DIR/lib/pkgconfig}" >> $GITHUB_ENV
+        echo "{PKG_CONFIG_PATH}={$HOME/$VPX_DIR/lib/pkgconfig}" >> $GITHUB_ENV
+
     - name: Install ffmpeg
       env:
         LINK: https://github.com/FFmpeg/FFmpeg.git
       run: |
-        export PKG_CONFIG_PATH=$HOME/$OGG_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
-        export PKG_CONFIG_PATH=$HOME/$VORBIS_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
-        export PKG_CONFIG_PATH=$HOME/$DAV1D_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
-        export PKG_CONFIG_PATH=$HOME/$VPX_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
         git clone --depth 1 $LINK
         cd FFmpeg
         ./configure --disable-autodetect \
