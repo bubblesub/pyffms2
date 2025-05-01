@@ -11,6 +11,8 @@ ROOT_DIR = Path(__file__).parent
 
 class TestFFMS2(unittest.TestCase):
     def test_sample_video(self):
+        print(ffms2.get_version_info())
+
         source_path = Path(ROOT_DIR / "data/morning rescue.mkv")
 
         indexer = ffms2.Indexer(source_path)

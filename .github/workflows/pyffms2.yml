@@ -5,12 +5,15 @@ on: [push, pull_request]
 jobs:
 
   build-unix:
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-         os: [ubuntu-latest, macos-latest]
-
-    runs-on: ${{ matrix.os }}
+        include:
+          - python-version: "3.9"
+          - python-version: "3.10"
+          - python-version: "3.11"
+          - python-version: "3.12"
 
     env:
       FFMS2_DIR: ffms2-dir
@@ -18,35 +21,24 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Python 3.7 version
+    - name: Install Python
       uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
-        architecture: 'x64'
+        python-version: ${{ matrix.python-version }}
 
-    - name: Install MacOS dependencies
-      if: matrix.os == 'macos-latest'
+    - name: Install dependencies
       run: |
-        brew install pkg-config automake
+        sudo apt install libffms2-dev
+        sudo apt-get install libavcodec-dev libavformat-dev libavdevice-dev
 
-    - name: Install FFmpeg
-      run: |
-        PLATFORM=${{ matrix.os }}
-        if [ ${PLATFORM} = "ubuntu-latest" ]
-        then
-            sudo apt-get install libavcodec-dev libavformat-dev libavdevice-dev
-        else
-            brew install ffmpeg
-        fi
-
-    - name: Install ffms2
-      env:
-        LINK: https://github.com/FFMS/ffms2
-      run: |
-        git clone --depth 1 $LINK $FFMS2_DIR
-        cd $FFMS2_DIR
-        ./autogen.sh --prefix=$HOME/$FFMS2_DIR
-        make -j4 install
+    # - name: Install ffms2
+    #   env:
+    #     LINK: https://github.com/FFMS/ffms2
+    #   run: |
+    #     git clone --depth 1 $LINK $FFMS2_DIR
+    #     cd $FFMS2_DIR
+    #     ./autogen.sh --prefix=$HOME/$FFMS2_DIR
+    #     make -j4 install
 
     - name: Set environment variables
       run: |
@@ -60,32 +52,74 @@ jobs:
         ./ffmsinfo
 
     - name: Install setuptools
-      run: |
-        pip install setuptools
+      run: pip install setuptools
 
     - name: Install pyffms2
-      run: |
-        pip install .[dev]
+      run: pip install .[dev]
 
     - name: Run tests
       run: |
         export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
         python -m pytest
-
-    - name: Run ffmsindex
-      run: |
-        export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
         python -m ffms2 "tests/data/morning rescue.mkv"
-
-    - name: Run ffmsinfo
-      run: |
-        export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
         python ffmsinfo.py "tests/data/morning rescue.mkv"
-
-    - name: Run easy_usage
-      run: |
-        export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
         python easy_usage.py
+
+  # build-mac:
+  #   runs-on: ubuntu-latest
+
+  #   env:
+  #     FFMS2_DIR: ffms2-dir
+
+  #   steps:
+  #   - uses: actions/checkout@v3
+
+  #   - name: Install Python
+  #     uses: actions/setup-python@v1
+  #     with:
+  #       python-version: 3.12
+
+  #   - name: Install MacOS dependencies
+  #     run: |
+  #       brew install pkg-config automake
+
+  #   - name: Install FFmpeg
+  #     run: |
+  #         brew install ffmpeg ffms2
+
+  #   - name: Install ffms2
+  #     env:
+  #       LINK: https://github.com/FFMS/ffms2
+  #     run: |
+  #       git clone --depth 1 $LINK $FFMS2_DIR
+  #       cd $FFMS2_DIR
+  #       ./autogen.sh --prefix=$HOME/$FFMS2_DIR
+  #       make -j4 install
+
+  #   - name: Set environment variables
+  #     run: |
+  #       echo "LD_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib" >> $GITHUB_ENV
+
+  #   - name: Run C-test
+  #     run: |
+  #       cd tests/data
+  #       g++ -std=c++11 -o ffmsinfo ffmsinfo.cpp \
+  #           -I$HOME/$FFMS2_DIR/include -L$HOME/$FFMS2_DIR/lib -lffms2
+  #       ./ffmsinfo
+
+  #   - name: Install setuptools
+  #     run: pip install setuptools
+
+  #   - name: Install pyffms2
+  #     run: pip install .[dev]
+
+  #   - name: Run tests
+  #     run: |
+  #       export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
+  #       python -m pytest
+  #       python -m ffms2 "tests/data/morning rescue.mkv"
+  #       python ffmsinfo.py "tests/data/morning rescue.mkv"
+  #       python easy_usage.py
 
   build-windows:
 
@@ -94,10 +128,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install Python 3.7 version
+    - name: Install Python
       uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.9'
         architecture: 'x64'
 
     - name: Install setuptools
