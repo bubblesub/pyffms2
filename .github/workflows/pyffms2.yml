@@ -65,12 +65,12 @@ jobs:
 
     - name: Install pyffms2
       run: |
-        pip install .
+        pip install .[dev]
 
     - name: Run tests
       run: |
         export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
-        python ffms2/test.py
+        python -m pytest
 
     - name: Run ffmsindex
       run: |
@@ -112,11 +112,11 @@ jobs:
         $PKG = "ffms2.zip"
         curl -LO "$LINK/$PKG"
         7z x $PKG
-        pip install .
+        pip install .[dev]
 
     - name: Run tests
       run: |
-        python ffms2/test.py
+        python -m pytest
 
     - name: Run ffmsindex
       run: |

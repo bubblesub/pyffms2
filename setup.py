@@ -32,7 +32,15 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
+    extras_require={
+        "dev": [
+            "pytest",
+        ]
+    },
     data_files=data_libs,
     python_requires=">=3.7",
     packages=find_packages(),
