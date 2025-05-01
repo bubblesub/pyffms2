@@ -38,11 +38,11 @@ ffms2_sources = [
   'src/core/videoutils.h',
   'src/core/zipfile.cpp',
   'src/core/zipfile.h',
-  'src/vapoursynth/vapoursource.cpp',
-  'src/vapoursynth/vapoursource.h',
-  'src/vapoursynth/vapoursynth.cpp',
-  'src/vapoursynth/VapourSynth.h',
-  'src/vapoursynth/VSHelper.h',
+  'src/vapoursynth/vapoursource4.cpp',
+  'src/vapoursynth/vapoursource4.h',
+  'src/vapoursynth/vapoursynth4.cpp',
+  'src/vapoursynth/VapourSynth4.h',
+  'src/vapoursynth/VSHelper4.h',
 ]
 
 ffmsindex_sources = [

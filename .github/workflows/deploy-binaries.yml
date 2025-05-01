@@ -3,6 +3,7 @@ name: Deploy binaries and wheels
 on:
   push:
     tags:
+      - '*.*'
       - '*.*.*'
 
 jobs:
@@ -129,16 +130,13 @@ jobs:
                     --disable-tools \
                     --disable-docs \
                     --disable-unit-tests \
-                    --prefix=$HOME/$VORBIS_DIR
+                    --prefix=$HOME/$VPX_DIR
         make -j12
         make install
 
     - name: Set environment variables
       run: |
-        echo "{PKG_CONFIG_PATH}={$HOME/$OGG_DIR/lib/pkgconfig}" >> $GITHUB_ENV
-        echo "{PKG_CONFIG_PATH}={$HOME/$VORBIS_DIR/lib/pkgconfig}" >> $GITHUB_ENV
-        echo "{PKG_CONFIG_PATH}={$HOME/$DAV1D_DIR/lib/pkgconfig}" >> $GITHUB_ENV
-        echo "{PKG_CONFIG_PATH}={$HOME/$VPX_DIR/lib/pkgconfig}" >> $GITHUB_ENV
+        echo "PKG_CONFIG_PATH=$HOME/$OGG_DIR/lib/pkgconfig:$HOME/$VORBIS_DIR/lib/pkgconfig:$HOME/$DAV1D_DIR/lib/pkgconfig:$HOME/$VPX_DIR/lib/pkgconfig" >> $GITHUB_ENV
 
     - name: Install ffmpeg
       env:
@@ -173,6 +171,10 @@ jobs:
         PKG_PATH: lib/pkgconfig
       run: |
         export PKG_CONFIG_PATH=$HOME/$FFMPEG_DIR/$PKG_PATH:$PKG_CONFIG_PATH
+        # Ensure ffmpeg include and library paths are available for the meson cross build
+        export CFLAGS="-I$HOME/$FFMPEG_DIR/include"
+        export CXXFLAGS="$CFLAGS"
+        export LDFLAGS="-L$HOME/$FFMPEG_DIR/lib"
         git clone --depth 1 $LINK $FFMS2_DIR
         cp $GITHUB_WORKSPACE/ffms2-build/* $FFMS2_DIR
         cd $FFMS2_DIR
@@ -182,7 +184,7 @@ jobs:
         mv ffms2.zip $GITHUB_WORKSPACE
 
     - name: Upload binaries
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: ffms2-binaries
         path: ffms2.zip
@@ -197,7 +199,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Download the zip
-      uses: actions/download-artifact@v1
+      uses: actions/download-artifact@v4
       with:
         name: ffms2-binaries
 
