@@ -41,8 +41,13 @@ class TestFFMS2(unittest.TestCase):
         self.assertEqual(video_source.properties.FirstTime, 23 / 1000)
         self.assertEqual(video_source.properties.LastTime, 3739 / 250)
         self.assertEqual(video_source.properties.NumFrames, 359)
-        self.assertEqual(video_source.properties.RFFNumerator, 1)
-        self.assertEqual(video_source.properties.RFFDenominator, 0)
+        try:
+            self.assertEqual(video_source.properties.RFFNumerator, 1000)
+            self.assertEqual(video_source.properties.RFFDenominator, 1)
+        except AssertionError:
+            # legacy version of ffms2
+            self.assertEqual(video_source.properties.RFFNumerator, 1)
+            self.assertEqual(video_source.properties.RFFDenominator, 0)
         self.assertEqual(video_source.properties.SARNum, 0)
         self.assertEqual(video_source.properties.SARDen, 1)
         self.assertEqual(video_source.properties.TopFieldFirst, 0)
@@ -53,7 +58,11 @@ class TestFFMS2(unittest.TestCase):
         self.assertEqual(audio_source.properties.Channels, 2)
         self.assertEqual(audio_source.properties.FirstTime, 0)
         self.assertEqual(audio_source.properties.LastTime, 15.07)
-        self.assertEqual(audio_source.properties.NumSamples, 664597)
+        try:
+            self.assertEqual(audio_source.properties.NumSamples, 664586)
+        except AssertionError:
+            # legacy version of ffms2
+            self.assertEqual(audio_source.properties.NumSamples, 664597)
         self.assertEqual(audio_source.properties.SampleFormat, 3)
         self.assertEqual(audio_source.properties.SampleRate, 44100)
 
