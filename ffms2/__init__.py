@@ -416,7 +416,7 @@ class Index:
                 raise ValueError(
                     "must provide either index file or source file"
                 )
-            index_file = source_file + FFINDEX_EXT
+            index_file = str(source_file) + FFINDEX_EXT
         # FFMS_ReadIndex() under Windows will hang if index file doesn’t exist.
         # Tested with FFMS 2.17
         if not os.path.isfile(index_file):
@@ -448,7 +448,7 @@ class Index:
         if index_file:
             self.index_file = index_file
         elif not self.index_file:
-            self.index_file = self.source_file + FFINDEX_EXT
+            self.index_file = str(self.source_file) + FFINDEX_EXT
         if FFMS_WriteIndex(
             get_encoded_path(self.index_file), self._index, byref(err_info)
         ):

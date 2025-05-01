@@ -3,9 +3,9 @@
 """
 
 import argparse
-import os
 import sys
 import time
+from pathlib import Path
 
 import ffms2.console_mode  # @UnusedImport
 
@@ -42,7 +42,7 @@ def init_progress_callback(
 
 def parse_args():
     parser = argparse.ArgumentParser("ffmsinfo")
-    parser.add_argument("source_files", type=str, nargs="+")
+    parser.add_argument("source_files", type=Path, nargs="+")
     parser.add_argument(
         "-w",
         "--disable-write-index",
@@ -96,9 +96,9 @@ def main():
         else:
             format_name = indexer.format_name
             track_info_list = indexer.track_info_list
-            index_file = source_file + ffms2.FFINDEX_EXT
+            index_file = source_file.with_suffix(ffms2.FFINDEX_EXT)
 
-            if os.path.isfile(index_file):
+            if index_file.is_file():
                 recreate_index = False
                 try:
                     index = ffms2.Index.read(index_file, source_file)

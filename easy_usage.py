@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """Easy usage example for ffms2."""
 
-import os
 import sys
 import time
+from pathlib import Path
 
 import ffms2.console_mode
 
-ROOT_DIR = os.path.dirname(sys.argv[0])
+ROOT_DIR = Path(__file__).parent
 ACCEPTABLE_DELAY = 0.03
 
 
 def main():
-    source_path = os.path.join(ROOT_DIR, "tests", "data", "morning rescue.mkv")
+    source_path = ROOT_DIR / "tests/data/morning rescue.mkv"
     now = time.time()
     vs = ffms2.VideoSource(source_path)
     if vs.index.index_file:
