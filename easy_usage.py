@@ -12,7 +12,7 @@ ACCEPTABLE_DELAY = 0.03
 
 
 def main():
-    source_path = os.path.join(ROOT_DIR, "ffms2", "data", "morning rescue.mkv")
+    source_path = os.path.join(ROOT_DIR, "tests", "data", "morning rescue.mkv")
     now = time.time()
     vs = ffms2.VideoSource(source_path)
     if vs.index.index_file:
