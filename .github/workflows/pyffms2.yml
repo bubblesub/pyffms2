@@ -75,7 +75,7 @@ jobs:
     - name: Run ffmsindex
       run: |
         export DYLD_FALLBACK_LIBRARY_PATH=$HOME/$FFMS2_DIR/lib
-        python ffms2/__main__.py "tests/data/morning rescue.mkv"
+        python -m ffms2 "tests/data/morning rescue.mkv"
 
     - name: Run ffmsinfo
       run: |
