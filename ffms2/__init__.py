@@ -1,5 +1,4 @@
-"""Bindings for FFmpegSource
-"""
+"""Bindings for FFmpegSource"""
 #   © 2012 spirit <hiddenspirit@gmail.com>
 #   https://github.com/rr-/pyffms2
 #
@@ -226,8 +225,7 @@ if FFMS_SetOutputFormatV2 is None:
     def FFMS_SetOutputFormatV2(
         source, target_formats, width, height, resizer, p_err_info
     ):
-        """Substitute when using FFMS 2.15-
-        """
+        """Substitute when using FFMS 2.15-"""
         while target_formats and target_formats[-1] < 0:
             target_formats = target_formats[:-1]
         return FFMS_SetOutputFormatV(
@@ -241,8 +239,7 @@ if FFMS_SetOutputFormatV2 is None:
 
 
 def get_version_info():
-    """Return library FFMS_VERSION as a tuple.
-    """
+    """Return library FFMS_VERSION as a tuple."""
     VersionInfo = namedtuple(
         "VersionInfo", ("major", "minor", "micro", "bump")
     )
@@ -254,8 +251,7 @@ def get_version_info():
 
 
 def get_version():
-    """Return library FFMS_VERSION as a string.
-    """
+    """Return library FFMS_VERSION as a string."""
     version_info = get_version_info()
     for n, e in enumerate(reversed(version_info[1:])):
         if e:
@@ -264,20 +260,17 @@ def get_version():
 
 
 def get_pix_fmt(name):
-    """Get a colorspace identifier from a colorspace name.
-    """
+    """Get a colorspace identifier from a colorspace name."""
     return FFMS_GetPixFmt(name.encode())
 
 
 def get_log_level():
-    """Get FFmpeg message level.
-    """
+    """Get FFmpeg message level."""
     return FFMS_GetLogLevel()
 
 
 def set_log_level(level=AV_LOG_QUIET):
-    """Set FFmpeg message level.
-    """
+    """Set FFmpeg message level."""
     return FFMS_SetLogLevel(level)
 
 
@@ -291,8 +284,7 @@ err_info = FFMS_ErrorInfo(
 
 
 class Error(Exception):
-    """FFMS_ErrorInfo
-    """
+    """FFMS_ErrorInfo"""
 
     def __init__(
         self,
@@ -311,8 +303,7 @@ class Error(Exception):
 
 
 class Indexer:
-    """FFMS_Indexer
-    """
+    """FFMS_Indexer"""
 
     _AUDIO_DUMP_EXT = ".w64"
     _FFMS_CancelIndexing = FFMS_CancelIndexing
@@ -390,8 +381,7 @@ class Indexer:
 
 
 class Index:
-    """FFMS_Index
-    """
+    """FFMS_Index"""
 
     _FFMS_DestroyIndex = FFMS_DestroyIndex
 
@@ -554,8 +544,7 @@ class Source:
 
 
 class VideoSource(VideoType, Source):
-    """FFMS_VideoSource
-    """
+    """FFMS_VideoSource"""
 
     _FFMS_DestroyVideoSource = FFMS_DestroyVideoSource
 
@@ -760,8 +749,7 @@ FFMS_VideoProperties.sar = property(_get_sar)
 
 
 class AudioSource(AudioType, Source):
-    """FFMS_AudioSource
-    """
+    """FFMS_AudioSource"""
 
     _DEFAULT_RATE = 100
     _SAMPLE_TYPES = [
@@ -837,8 +825,7 @@ class AudioSource(AudioType, Source):
 
 
 class AudioLinearAccess(Sized, Iterable):
-    """Linear access to audio
-    """
+    """Linear access to audio"""
 
     def __init__(
         self,
@@ -936,8 +923,7 @@ class AudioLinearAccess(Sized, Iterable):
 
 
 class Track:
-    """FFMS_Track
-    """
+    """FFMS_Track"""
 
     def __init__(self, track, number, index):
         self._track = track
@@ -979,8 +965,7 @@ class Track:
 
 
 class VideoTrack(VideoType, Track):
-    """FFMS_Track of type FFMS_TYPE_VIDEO
-    """
+    """FFMS_Track of type FFMS_TYPE_VIDEO"""
 
     _KEYFRAME_FORMAT_VERSION = 1
 
@@ -1067,8 +1052,7 @@ class VideoTrack(VideoType, Track):
 
 
 class AudioTrack(AudioType, Track):
-    """FFMS_Track of type FFMS_TYPE_AUDIO
-    """
+    """FFMS_Track of type FFMS_TYPE_AUDIO"""
 
 
 def list_to_mask(l):

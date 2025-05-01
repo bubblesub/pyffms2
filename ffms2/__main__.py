@@ -1,5 +1,4 @@
-"""Create FFMS index file
-"""
+"""Create FFMS index file"""
 
 import argparse
 import os
@@ -54,7 +53,10 @@ def parse_args():
     )
     parser.add_argument("input_file", type=str, help="input media filename")
     parser.add_argument(
-        "output_file", nargs="?", type=str, help="output index filename",
+        "output_file",
+        nargs="?",
+        type=str,
+        help="output index filename",
     )
     parser.add_argument(
         "-f",

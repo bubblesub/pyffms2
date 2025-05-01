@@ -1,5 +1,4 @@
-"""Write to stdout without causing UnicodeEncodeError
-"""
+"""Write to stdout without causing UnicodeEncodeError"""
 
 import sys
 
@@ -38,8 +37,7 @@ if getattr(sys.stdout, "errors", "") == "strict" and not getattr(
             return repl, error.end
 
         class SimpleTranslitStreamFilter:
-            """Filter a stream through simple transliteration.
-            """
+            """Filter a stream through simple transliteration."""
 
             errors = "simple_translit"
 

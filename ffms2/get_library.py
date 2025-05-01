@@ -1,5 +1,4 @@
-"""Load shared libraries
-"""
+"""Load shared libraries"""
 #   © 2012 spirit <hiddenspirit@gmail.com>
 #
 #   This program is free software: you can redistribute it and/or modify it
@@ -35,8 +34,7 @@ def get_library(
     win_class_name="CDLL",
     win_attr_format=None,
 ):
-    """Find and load a shared library.
-    """
+    """Find and load a shared library."""
     library_path = get_library_path(name, win_format, win64_format)
     if not library_path:
         if not lib_name:

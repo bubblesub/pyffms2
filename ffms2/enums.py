@@ -1,5 +1,4 @@
-"""FFMS enumerations
-"""
+"""FFMS enumerations"""
 
 FFMS_CH_FRONT_LEFT = 0x1
 FFMS_CH_FRONT_RIGHT = 0x2
