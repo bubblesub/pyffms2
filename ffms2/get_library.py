@@ -58,7 +58,7 @@ if os.name == "nt":
 
     def get_bit_architecture():
         if sys.platform == "cli" or sys.platform.startswith("java"):
-            return int(re.match("^(\d+)", platform.architecture()[0]).group(1))
+            return int(re.match(r"^(\d+)", platform.architecture()[0]).group(1))
         try:
             return int.bit_length(sys.maxsize) + 1
         except (TypeError, AttributeError):
